@@ -19,7 +19,7 @@ const sendEmail = async ({
 
     const data = await resend.emails.send({
       from: "BRIXO Website Builder <onboarding@resend.dev>",
-      to: ["visualonvibe@gmail.com"], // Change after verifying your own domain
+      to: ["diksam2710@gmail.com"], // Change after verifying your own domain
       subject: `🛒 New Order Received - ${orderId}`,
       text: `Hello,
 
