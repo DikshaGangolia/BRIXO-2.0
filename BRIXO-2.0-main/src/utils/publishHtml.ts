@@ -354,6 +354,12 @@ ${pageNav}
     <div style="padding:24px">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:10px">Contact</div>
       <input id="brixo-co-email" type="email" placeholder="Email address" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:14px;font-size:14px;box-sizing:border-box" />
+      <input
+  id="brixo-co-phone"
+  type="tel"
+  placeholder="Phone Number"
+  style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:12px;font-size:14px;box-sizing:border-box"
+/>
       <input id="brixo-co-name" type="text" placeholder="Full name" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:14px;font-size:14px;box-sizing:border-box" />
       <input id="brixo-co-address" type="text" placeholder="Shipping address" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:20px;font-size:14px;box-sizing:border-box" />
 
@@ -528,10 +534,14 @@ ${pageNav}
 
   window.__brixoPay = function(){
     var email = (document.getElementById('brixo-co-email')||{}).value || '';
+    var phone = (document.getElementById('brixo-co-phone')||{}).value || '';
     var name = (document.getElementById('brixo-co-name')||{}).value || '';
     var addr = (document.getElementById('brixo-co-address')||{}).value || '';
     var method = (document.querySelector('input[name=brixo-pay]:checked')||{}).value || 'card';
-    if (!email || !name || !addr) { toast('Please fill in your contact & shipping details'); return; }
+    if (!email || !name || !phone || !addr) {
+  toast('Please fill in your contact, phone & shipping details');
+  return;
+}
     if (method === 'card') {
       var num = (document.getElementById('brixo-cc-num')||{}).value.replace(/\\s/g,'');
       var exp = (document.getElementById('brixo-cc-exp')||{}).value;
@@ -551,13 +561,37 @@ ${pageNav}
     "Content-Type": "application/json"
   },
   body: JSON.stringify({
+    name: name,
     email: email,
-    productName: n + " items"
+    phone: phone,
+    address: addr,
+    productName: n + " items",
+    orderId: orderId,
+    total: t
   })
 })
 .then(res => res.json())
-.then(data => console.log("Email status:", data))
-.catch(err => console.error("Email error:", err));
+.then(data => {
+  console.log("Email status:", data);
+
+  // Send SMS after email
+  return fetch("https://brixo-2-0.onrender.com/api/twilio/send-sms", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name: name,
+      phone: phone,
+      productName: n + " items",
+      orderId: orderId,
+      total: t
+    })
+  });
+})
+.then(res => res.json())
+.then(data => console.log("SMS status:", data))
+.catch(err => console.error("Notification error:", err));
       window.__brixoCloseCheckout();
       toast('✅ Payment successful! Order ' + orderId + ' — $' + t);
       setTimeout(function(){ alert('Order confirmed!\\n\\nOrder #' + orderId + '\\nItems: ' + n + '\\nTotal: $' + t + '\\nPayment: ' + method.toUpperCase() + '\\n\\nA confirmation has been sent to ' + email + '.'); }, 400);
