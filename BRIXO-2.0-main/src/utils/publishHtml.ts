@@ -392,7 +392,7 @@ ${pageNav}
       <button id="brixo-pay-btn" onclick="window.__brixoPay()" style="width:100%;padding:14px;background:${primary};color:#fff;border:0;border-radius:${radius};font-weight:800;font-size:14px;cursor:pointer">
         Pay Now
       </button>
-      <p style="text-align:center;font-size:11px;opacity:.5;margin:12px 0 0">🔒 Demo checkout — no real payment is processed</p>
+      <p style="text-align:center;font-size:11px;opacity:.5;margin:12px 0 0">🔒 checkout — payment is processed</p>
     </div>
   </div>
 </div>
