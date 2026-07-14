@@ -10,6 +10,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+
 jobs:
   deploy:
     environment:
@@ -28,18 +29,18 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        working-directory: ./BRIXO-2.0-main/BRIXO-2.0
+        working-directory: ./BRIXO-2.0-main
         run: npm install
 
       - name: Build project
-        working-directory: ./BRIXO-2.0-main/BRIXO-2.0
+        working-directory: ./BRIXO-2.0-main
         run: npm run build
+
       - name: Upload artifact
-  uses: actions/upload-pages-artifact@v3
-  with:
-    path: ./BRIXO-2.0-main/dist
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./BRIXO-2.0-main/dist
 
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-        # trigger github pages deployment
