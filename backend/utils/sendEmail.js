@@ -8,7 +8,7 @@ const sendEmail = async (to, productName) => {
 
     const data = await resend.emails.send({
       from: "BRIXO <onboarding@resend.dev>",
-      to: [to],
+      to: ["diksam2710@gmail.com"],
       subject: "BRIXO Order Confirmation",
       text: `Your order for ${productName} has been received successfully. Thank you for shopping with BRIXO!`,
     });
