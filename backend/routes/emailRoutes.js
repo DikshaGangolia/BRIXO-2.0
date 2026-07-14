@@ -4,9 +4,25 @@ const sendEmail = require("../utils/sendEmail");
 
 router.post("/send-email", async (req, res) => {
   try {
-    const { email, productName } = req.body;
+    const {
+  name,
+  email,
+  phone,
+  address,
+  productName,
+  orderId,
+  total,
+} = req.body;
 
-    await sendEmail(email, productName);
+    await sendEmail({
+  name,
+  email,
+  phone,
+  address,
+  productName,
+  orderId,
+  total,
+});
 
     res.json({
       success: true,

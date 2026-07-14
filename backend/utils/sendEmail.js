@@ -2,31 +2,43 @@ const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const sendEmail = async (to, productName) => {
+const sendEmail = async ({
+  name,
+  email,
+  phone,
+  address,
+  productName,
+  orderId,
+  total,
+}) => {
   try {
     console.log(
       "RESEND KEY:",
       process.env.RESEND_API_KEY ? "Loaded" : "Missing"
     );
 
-    // Generate a unique Order ID
-    const orderId = `BRX-${Date.now()}`;
-
     const data = await resend.emails.send({
       from: "BRIXO Website Builder <onboarding@resend.dev>",
-      to: ["visualonvibe@gmail.com"], // Test email (change after verifying your domain)
+      to: ["visualonvibe@gmail.com"], // Change after verifying your own domain
       subject: `🛒 New Order Received - ${orderId}`,
       text: `Hello,
 
 A new order has been placed through your BRIXO website.
 
 =========================================
-           ORDER DETAILS
+            ORDER DETAILS
 =========================================
 
 Order ID       : ${orderId}
 Product        : ${productName}
-Customer Email : ${to}
+Total Amount   : $${total}
+
+Customer Name  : ${name}
+Customer Email : ${email}
+Phone Number   : ${phone}
+
+Shipping Address:
+${address}
 
 =========================================
 
