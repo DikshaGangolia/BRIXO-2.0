@@ -28,16 +28,16 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        working-directory: ./BRIXO-2.0-main
+        working-directory: ./BRIXO-2.0-main/BRIXO-2.0
         run: npm install
 
       - name: Build project
-        working-directory: ./BRIXO-2.0-main
+        working-directory: ./BRIXO-2.0-main/BRIXO-2.0
         run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./BRIXO-2.0-main/dist
+          path: ./BRIXO-2.0-main/BRIXO-2.0/dist
 
       - name: Deploy
         id: deployment
