@@ -21,12 +21,15 @@ const sendEmail = async (to, productName) => {
   },
 });
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to,
-      subject: "BRIXO Order Confirmation",
-      text: `Your order for ${productName} has been received successfully. Thank you for shopping with BRIXO!`,
-    });
+    const info = await transporter.sendMail({
+  from: process.env.EMAIL_USER,
+  to,
+  subject: "BRIXO Order Confirmation",
+  text: `Your order for ${productName} has been received successfully. Thank you for shopping with BRIXO!`,
+  timeout: 10000,
+});
+
+console.log("MAIL RESPONSE:", info.messageId);
 
     console.log("EMAIL SENT SUCCESSFULLY");
 
