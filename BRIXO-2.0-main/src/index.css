@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@layer utilities {
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2.5s infinite;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+}
+
+/* Dark mode custom scrollbars for building interfaces */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
