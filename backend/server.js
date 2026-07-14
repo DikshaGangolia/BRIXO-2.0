@@ -1,3 +1,5 @@
+
+require("dotenv").config();
 const emailRoutes = require("./routes/emailRoutes");
 const auth = require("./middleware/authMiddleware");
 const projectRoutes = require("./routes/projectRoutes");
