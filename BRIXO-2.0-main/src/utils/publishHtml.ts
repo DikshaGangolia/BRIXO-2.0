@@ -561,37 +561,18 @@ ${pageNav}
     "Content-Type": "application/json"
   },
   body: JSON.stringify({
-    name: name,
-    email: email,
-    phone: phone,
-    address: addr,
-    productName: n + " items",
-    orderId: orderId,
-    total: t
-  })
+  name: name,
+  email: email,
+  phone: phone,
+  address: addr,
+  productName: n + " items",
+  orderId: orderId,
+  total: t
+})
 })
 .then(res => res.json())
-.then(data => {
-  console.log("Email status:", data);
-
-  // Send SMS after email
-  return fetch("https://brixo-2-0.onrender.com/api/twilio/send-sms", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      name: name,
-      phone: phone,
-      productName: n + " items",
-      orderId: orderId,
-      total: t
-    })
-  });
-})
-.then(res => res.json())
-.then(data => console.log("SMS status:", data))
-.catch(err => console.error("Notification error:", err));
+.then(data => console.log("Email status:", data))
+.catch(err => console.error("Email error:", err));
       window.__brixoCloseCheckout();
       toast('✅ Payment successful! Order ' + orderId + ' — $' + t);
       setTimeout(function(){ alert('Order confirmed!\\n\\nOrder #' + orderId + '\\nItems: ' + n + '\\nTotal: $' + t + '\\nPayment: ' + method.toUpperCase() + '\\n\\nA confirmation has been sent to ' + email + '.'); }, 400);
