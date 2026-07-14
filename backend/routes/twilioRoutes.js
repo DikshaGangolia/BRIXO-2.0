@@ -1,8 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const twilio = require("twilio");
-console.log("Route SID:", process.env.TWILIO_ACCOUNT_SID ? "Loaded" : "Missing");
-console.log("Route TOKEN:", process.env.TWILIO_AUTH_TOKEN ? "Loaded" : "Missing");
+
+console.log(
+  "Route SID:",
+  process.env.TWILIO_ACCOUNT_SID ? "Loaded" : "Missing"
+);
+console.log(
+  "Route TOKEN:",
+  process.env.TWILIO_AUTH_TOKEN ? "Loaded" : "Missing"
+);
+
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
@@ -10,10 +18,26 @@ const client = twilio(
 
 router.post("/send-sms", async (req, res) => {
   try {
-    const { phone, productName } = req.body;
+    const {
+      phone,
+      name,
+      productName,
+      orderId,
+      total,
+    } = req.body;
 
     const message = await client.messages.create({
-      body: `Thank you for adding "${productName}" to your cart on BRIXO!`,
+      body: `🛒 BRIXO
+
+Hi ${name},
+
+Your order has been placed successfully!
+
+Order ID: ${orderId}
+Product: ${productName}
+Total: $${total}
+
+Thank you for shopping with BRIXO!`,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: phone,
     });
@@ -23,7 +47,7 @@ router.post("/send-sms", async (req, res) => {
       sid: message.sid,
     });
   } catch (err) {
-    console.error(err);
+    console.error("TWILIO ERROR:", err);
     res.status(500).json({
       success: false,
       error: err.message,
