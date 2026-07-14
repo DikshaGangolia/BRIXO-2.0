@@ -35,9 +35,9 @@ jobs:
         working-directory: ./BRIXO-2.0-main/BRIXO-2.0
         run: npm run build
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./BRIXO-2.0-main/BRIXO-2.0/dist
+  uses: actions/upload-pages-artifact@v3
+  with:
+    path: ./BRIXO-2.0-main/dist
 
       - name: Deploy
         id: deployment
