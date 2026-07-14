@@ -9,28 +9,24 @@ const sendEmail = async (to, productName) => {
     );
 
     const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+    });
 
     const info = await transporter.sendMail({
-  from: process.env.EMAIL_USER,
-  to,
-  subject: "BRIXO Order Confirmation",
-  text: `Your order for ${productName} has been received successfully. Thank you for shopping with BRIXO!`,
-  timeout: 10000,
-});
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: "BRIXO Order Confirmation",
+      text: `Your order for ${productName} has been received successfully. Thank you for shopping with BRIXO!`,
+    });
 
-console.log("MAIL RESPONSE:", info.messageId);
-
+    console.log("MAIL RESPONSE:", info.messageId);
     console.log("EMAIL SENT SUCCESSFULLY");
 
   } catch (error) {
