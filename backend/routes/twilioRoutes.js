@@ -25,7 +25,7 @@ router.post("/send-sms", async (req, res) => {
       orderId,
       total,
     } = req.body;
-
+    console.log("PHONE RECEIVED:", phone);
     const message = await client.messages.create({
       body: `🛒 BRIXO
 
