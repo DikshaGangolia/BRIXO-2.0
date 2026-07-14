@@ -24,6 +24,7 @@
     "morgan": "^1.11.0",
     "nodemailer": "^9.0.3",
     "razorpay": "^2.9.6",
+    "resend": "^6.17.2",
     "twilio": "^6.0.2"
   },
   "devDependencies": {
