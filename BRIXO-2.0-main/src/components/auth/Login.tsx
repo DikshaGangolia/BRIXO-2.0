@@ -20,13 +20,13 @@ export const Login: React.FC = () => {
     // Simulate small latency for premium auth experience
     await new Promise(r => setTimeout(r, 600));
 
-    const success = await login(email, password);
+    const res = await login(email, password);
     setIsLoading(false);
 
-    if (success) {
+    if (res.success) {
       navigate('/dashboard');
     } else {
-      setError('Invalid email or password. Hint: Signup a new account or try user@example.com / password123');
+      setError(res.message || 'Invalid email or password. Hint: Signup a new account or try user@example.com / password123');
     }
   };
 

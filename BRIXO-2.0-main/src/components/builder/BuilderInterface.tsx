@@ -108,6 +108,7 @@ export const BuilderInterface: React.FC = () => {
   const navigate = useNavigate();
   const { projects, loadProjects } = useAuthStore();
   const { activeProject, activePageId, setActivePageId, loadProject } = useBuilderStore();
+  const { toggleCart, getCartCount } = useCartStore();
 
   // Dialog Overlays states
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -121,40 +122,84 @@ export const BuilderInterface: React.FC = () => {
   const [deployLogs, setDeployLogs] = useState<string[]>([]);
   const [deployUrl, setDeployUrl] = useState<string | null>(null);
 
-  // Load project on mount or redirect
-  useEffect(() => {
-  const fetchProjects = async () => {
-    await loadProjects();
-  };
-
-  fetchProjects();
-}, []);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    console.log("siteId:", siteId);
-console.log("projects:", projects);
-console.log("activeProject:", activeProject);
-    if (siteId && projects.length > 0) {
-      if (!activeProject || activeProject.id !== siteId) {
-        const match = projects.find(p => p.id === siteId);
-        if (match) {
-          console.log("Loaded project:", match);
-          console.log("Design tokens:", match.config?.designTokens);
-          loadProject(match);
+    let isSubscribed = true;
+
+    const initializeBuilder = async () => {
+      setIsInitializing(true);
+      setLoadError(null);
+
+      // 1. If activeProject is already set in builder store and matches siteId, we are ready
+      const currentActive = useBuilderStore.getState().activeProject;
+      if (currentActive && currentActive.id === siteId) {
+        if (isSubscribed) setIsInitializing(false);
+        return;
+      }
+
+      // 2. Fetch projects from auth store if empty
+      let currentProjects = useAuthStore.getState().projects;
+      if (currentProjects.length === 0) {
+        await loadProjects();
+        currentProjects = useAuthStore.getState().projects;
+      }
+
+      // 3. Find matching project in store
+      const match = currentProjects.find(p => p.id === siteId);
+      if (match) {
+        loadProject(match);
+        if (isSubscribed) setIsInitializing(false);
+      } else {
+        // Re-check active project state one more time
+        const recheckActive = useBuilderStore.getState().activeProject;
+        if (recheckActive && recheckActive.id === siteId) {
+          if (isSubscribed) setIsInitializing(false);
         } else {
-          navigate('/dashboard');
+          if (isSubscribed) {
+            setLoadError(`Project with ID "${siteId}" could not be found.`);
+            setIsInitializing(false);
+          }
         }
       }
+    };
+
+    if (siteId) {
+      initializeBuilder();
     }
-  }, [siteId, projects, activeProject,loadProject,navigate]);
-  if (!activeProject) {
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [siteId, loadProjects, loadProject]);
+
+  if (isInitializing && !activeProject) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-slate-100">
-        <span className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mb-4"></span>
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-450">Loading BRIXO workspace...</span>
+        <span className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4"></span>
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Loading BRIXO workspace...</span>
       </div>
     );
-}
+  }
+
+  if (loadError && !activeProject) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-slate-100 space-y-4 text-center">
+        <div className="p-4 bg-red-950/40 border border-red-900/60 rounded-2xl text-red-400 text-sm max-w-md">
+          <p className="font-bold text-base">Workspace Initialization Failure</p>
+          <p className="text-xs text-slate-400 mt-1">{loadError}</p>
+        </div>
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg cursor-pointer"
+        >
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
+
   // Real deployment publisher pipeline
   const handleDeploy = async () => {
     setIsDeploying(true);
@@ -222,7 +267,6 @@ console.log("activeProject:", activeProject);
     }
   };
 
-  const { toggleCart, getCartCount } = useCartStore();
   const cartCount = getCartCount();
 
   return (

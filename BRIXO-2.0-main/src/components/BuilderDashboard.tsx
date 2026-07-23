@@ -24,8 +24,17 @@ import type { Industry, WebsiteConfig, WebsiteComponent, ComponentType, DeploySt
 import { parseAIPrompt, createInitialConfig, generateComponentData, generateLogoSvg } from '../utils/generatorEngine';
 import { ComponentRenderer } from './previewTemplates';
 import { exportProjectZip } from '../utils/exportBundle';
+import { useAuthStore } from '../store/useAuthStore';
+import axios from 'axios';
+import { PublishSuccessScreen } from './builder/PublishSuccessScreen';
+import { OwnerDeveloperPanelModal } from './dashboard/OwnerDeveloperPanelModal';
 
 export const BuilderDashboard: React.FC = () => {
+  const { session, upgradeUserPlanLocally } = useAuthStore();
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [showDevPanel, setShowDevPanel] = useState(false);
+
+
   // --- STATE MANAGEMENT ---
   const [prompt, setPrompt] = useState('Create a modern grocery store website with organic food delivery and orange colors');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -294,8 +303,82 @@ export const BuilderDashboard: React.FC = () => {
     }
   };
 
+  const handleRazorpayPayment = async (platform: 'Vercel' | 'Netlify' | 'GitHub Pages') => {
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'https://brixo-2-0.onrender.com';
+      const orderRes = await axios.post(`${API_BASE}/api/payment/create-order`, {
+        planType: 'pro'
+      });
+
+      if (!orderRes.data || !orderRes.data.success) {
+        alert("Failed to create Razorpay order.");
+        return;
+      }
+
+      const { order, key_id } = orderRes.data;
+
+      const options = {
+        key: key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: "BRIXO Premium Publishing",
+        description: "Unlock one-click publishing and host your site live",
+        order_id: order.id,
+        handler: async function (response: any) {
+          try {
+            const verifyRes = await axios.post(`${API_BASE}/api/payment/verify-payment`, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              email: session?.email,
+              planType: 'pro'
+            });
+
+            if (verifyRes.data && verifyRes.data.success) {
+              upgradeUserPlanLocally('pro');
+              alert("Payment successful! Premium plan activated.");
+              triggerDeploy(platform);
+            } else {
+              alert("Payment verification failed.");
+            }
+          } catch (err) {
+            console.error("Verification error:", err);
+            alert("Error verifying payment.");
+          }
+        },
+        prefill: {
+          name: session?.name || "",
+          email: session?.email || "",
+        },
+        theme: {
+          color: "#3b82f6"
+        }
+      };
+
+      const rzp1 = new (window as any).Razorpay(options);
+      rzp1.on('payment.failed', function (response: any) {
+        alert(`Payment failed: ${response.error.description}`);
+      });
+      rzp1.open();
+
+    } catch (err) {
+      console.error("Payment setup failed:", err);
+      alert("Failed to initialize payment gateway.");
+    }
+  };
+
   // One Click Deploy - Real publish via backend API
   const triggerDeploy = async (platform: 'Vercel' | 'Netlify' | 'GitHub Pages') => {
+    // Check premium status
+    const isPremium = ['pro', 'max', 'premium'].includes(session?.plan || '');
+    if (!isPremium) {
+      const proceed = window.confirm("Publish Lock: A premium subscription plan is required to publish websites. Upgrade with Razorpay now?");
+      if (proceed) {
+        handleRazorpayPayment(platform);
+      }
+      return;
+    }
+
     setDeployState({
       isDeploying: true,
       progress: 0,
@@ -326,7 +409,7 @@ export const BuilderDashboard: React.FC = () => {
     try {
       // Call real publish API
       const token = localStorage.getItem('token');
-      const API_BASE = 'https://brixo-2-0.onrender.com';
+      const API_BASE = import.meta.env.VITE_API_URL || 'https://brixo-2-0.onrender.com';
       const pid = projectId || config.businessName.toLowerCase().replace(/[^a-z0-9]/g, '-');
       const response = await fetch(`${API_BASE}/api/projects/publish/${pid}`, {
         method: 'PUT',
@@ -338,13 +421,18 @@ export const BuilderDashboard: React.FC = () => {
       const data = await response.json();
 
       if (data.success) {
-        const publishedUrl = data.publishUrl || `${API_BASE}/preview/${pid}`;
+        const publishedUrl = data.publishUrl || `${window.location.origin}/site/${data.slug || pid}`;
         setDeployState(prev => ({
           ...prev,
           isDeploying: false,
-          url: publishedUrl
+          url: publishedUrl,
+          slug: data.slug || pid,
+          qrCodeDataUrl: data.qrCodeDataUrl,
+          qrCodeSvg: data.qrCodeSvg
         }));
+        setShowSuccessScreen(true);
       } else {
+
         // Fallback: show preview URL
         setDeployState(prev => ({
           ...prev,
@@ -361,6 +449,7 @@ export const BuilderDashboard: React.FC = () => {
       }));
     }
   };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
@@ -1291,7 +1380,40 @@ export const BuilderDashboard: React.FC = () => {
           </div>
         </div>
       )}
+      {showSuccessScreen && deployState.url && (
+
+        <PublishSuccessScreen
+          url={deployState.url}
+          projectName={config.businessName}
+          slug={deployState.slug || 'site'}
+          qrCodeDataUrl={deployState.qrCodeDataUrl}
+          qrCodeSvg={deployState.qrCodeSvg}
+          projectId={projectId}
+          onOpenDeveloperPanel={() => {
+            setShowSuccessScreen(false);
+            setShowDevPanel(true);
+          }}
+          onClose={() => setShowSuccessScreen(false)}
+          onRepublish={() => triggerDeploy(deployState.targetPlatform || 'Vercel')}
+          onUnpublish={async () => {
+            if (projectId) {
+              try {
+                await useAuthStore.getState().unpublishProject(projectId);
+                setShowSuccessScreen(false);
+                alert("Website has been unpublished and taken offline.");
+              } catch (e: any) {
+                alert("Failed to unpublish site: " + (e.message || "Error"));
+              }
+            }
+          }}
+        />
+      )}
+
+      {showDevPanel && projectId && (
+        <OwnerDeveloperPanelModal siteId={projectId} onClose={() => setShowDevPanel(false)} />
+      )}
 
     </div>
+
   );
 };

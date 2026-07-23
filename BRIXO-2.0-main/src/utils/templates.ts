@@ -78,10 +78,10 @@ export const getTemplatePreset = (category: string, name: string): WebsiteConfig
       components.push(createComponent('Products', {
         title: 'Featured Collection',
         items: [
-          { name: 'Classic Trench Coat', price: '$189', desc: 'Premium windproof materials.', img: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=400&q=80' },
-          { name: 'Linen Summer Dress', price: '$89', desc: 'Breathable ecological flax fibers.', img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80' },
-          { name: 'Italian Leather Boots', price: '$220', desc: 'Handcrafted full-grain soles.', img: 'https://images.unsplash.com/photo-1520639888713-7851133b1ed0?auto=format&fit=crop&w=400&q=80' },
-          { name: 'Silk Scarf', price: '$45', desc: 'Pure mulberry silk.', img: 'https://images.unsplash.com/photo-1584917469897-5753827032df?auto=format&fit=crop&w=400&q=80' }
+          { name: 'Classic Trench Coat', price: '₹0.10', desc: 'Premium windproof materials.', img: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Linen Summer Dress', price: '₹0.10', desc: 'Breathable ecological flax fibers.', img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Italian Leather Boots', price: '₹0.10', desc: 'Handcrafted full-grain soles.', img: 'https://images.unsplash.com/photo-1520639888713-7851133b1ed0?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Silk Scarf', price: '₹0.10', desc: 'Pure mulberry silk.', img: 'https://images.unsplash.com/photo-1584917469897-5753827032df?auto=format&fit=crop&w=400&q=80' }
         ]
       }));
     } else if (normalizedName === 'electronicsstore') {
@@ -98,10 +98,10 @@ export const getTemplatePreset = (category: string, name: string): WebsiteConfig
       components.push(createComponent('Products', {
         title: 'Top Gadgets',
         items: [
-          { name: 'Wireless ANC Headphones', price: '$299', desc: 'Hybrid noise-cancelling tech.', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80' },
-          { name: 'Pro Gaming Console', price: '$499', desc: 'Ultra high frame rate output.', img: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?auto=format&fit=crop&w=400&q=80' },
-          { name: 'Smart Watch', price: '$199', desc: 'Fitness and health tracking.', img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80' },
-          { name: 'Bluetooth Speaker', price: '$79', desc: 'Crystal clear sound.', img: 'https://images.unsplash.com/photo-1608156639585-340049695c73?auto=format&fit=crop&w=400&q=80' }
+          { name: 'Wireless ANC Headphones', price: '₹0.10', desc: 'Hybrid noise-cancelling tech.', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Pro Gaming Console', price: '₹0.10', desc: 'Ultra high frame rate output.', img: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Smart Watch', price: '₹0.10', desc: 'Fitness and health tracking.', img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Bluetooth Speaker', price: '₹0.10', desc: 'Crystal clear sound.', img: 'https://images.unsplash.com/photo-1608156639585-340049695c73?auto=format&fit=crop&w=400&q=80' }
         ]
       }));
     } else { // grocery store
@@ -122,10 +122,10 @@ export const getTemplatePreset = (category: string, name: string): WebsiteConfig
       components.push(createComponent('Products', {
         title: 'Fresh Fruits & Vegetables',
         items: [
-          { name: 'Organic Avocados', price: '$4.99', desc: 'Perfect ripeness guaranteed.', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=400&q=80' },
-          { name: 'Fresh Strawberries', price: '$3.49', desc: 'Handpicked this morning.', img: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=400&q=80' },
-          { name: 'Red Apples', price: '$2.99', desc: 'Sweet and crunchy.', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6bcd6?auto=format&fit=crop&w=400&q=80' },
-          { name: 'Baby Spinach', price: '$3.99', desc: 'Triple washed organic.', img: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=400&q=80' }
+          { name: 'Organic Avocados', price: '₹0.10', desc: 'Perfect ripeness guaranteed.', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Fresh Strawberries', price: '₹0.10', desc: 'Handpicked this morning.', img: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Red Apples', price: '₹0.10', desc: 'Sweet and crunchy.', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6bcd6?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Baby Spinach', price: '₹0.10', desc: 'Triple washed organic.', img: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=400&q=80' }
         ]
       }));
     }
@@ -170,10 +170,10 @@ export const getTemplatePreset = (category: string, name: string): WebsiteConfig
     components.push(createComponent('Products', {
       title: 'Our Signature Menu',
       items: [
-        { name: 'Truffle Mushroom Fettuccine', price: '$26', desc: 'Rich butter sauce, fresh parmesan, white glaze.', img: 'https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Pan-Seared Rosemary Salmon', price: '$32', desc: 'Accompanied by garlic green asparagus.', img: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Wagyu Beef Burger', price: '$24', desc: 'Caramelized onions, aged cheddar.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Caesar Salad', price: '$18', desc: 'Crispy romaine, herb croutons.', img: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=400&q=80' }
+        { name: 'Truffle Mushroom Fettuccine', price: '₹0.10', desc: 'Rich butter sauce, fresh parmesan, white glaze.', img: 'https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&w=400&q=80' },
+        { name: 'Pan-Seared Rosemary Salmon', price: '₹0.10', desc: 'Accompanied by garlic green asparagus.', img: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=400&q=80' },
+        { name: 'Wagyu Beef Burger', price: '₹0.10', desc: 'Caramelized onions, aged cheddar.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80' },
+        { name: 'Caesar Salad', price: '₹0.10', desc: 'Crispy romaine, herb croutons.', img: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=400&q=80' }
       ]
     }));
   }
@@ -256,15 +256,15 @@ export const getTemplatePreset = (category: string, name: string): WebsiteConfig
     components.push(createComponent('Stats', {
       title: 'Our Global Impact',
       items: [
-        { title: '$1.2B+', desc: 'Asset growth handled.' },
+        { title: '₹1.2B+', desc: 'Asset growth handled.' },
         { title: '99.9%', desc: 'Optimization satisfaction rate.' }
       ]
     }));
     components.push(createComponent('Pricing', {
       title: 'Transparent Plans',
       items: [
-        { name: 'Growth Campaign', price: '$999', period: 'mo', features: ['SEO Strategy', 'Social Campaign management', 'Slack priority channel'] },
-        { name: 'Enterprise Core', price: '$2499', period: 'mo', features: ['Custom systems coding', 'Telemetry monitors', 'SLA contracts'] }
+        { name: 'Growth Campaign', price: '₹999', period: 'mo', features: ['SEO Strategy', 'Social Campaign management', 'Slack priority channel'] },
+        { name: 'Enterprise Core', price: '₹2499', period: 'mo', features: ['Custom systems coding', 'Telemetry monitors', 'SLA contracts'] }
       ]
     }));
   }
@@ -378,8 +378,8 @@ export const getTemplatePreset = (category: string, name: string): WebsiteConfig
     components.push(createComponent('Pricing', {
       title: 'Gym Memberships',
       items: [
-        { name: 'Basic Floor', price: '$29', period: 'mo', features: ['Gym floor access', 'Locker access'] },
-        { name: 'Pro Workout Coach', price: '$59', period: 'mo', features: ['Group sessions', 'Sauna recovery', 'Custom nutrition guidance'] }
+        { name: 'Basic Floor', price: '₹29', period: 'mo', features: ['Gym floor access', 'Locker access'] },
+        { name: 'Pro Workout Coach', price: '₹59', period: 'mo', features: ['Group sessions', 'Sauna recovery', 'Custom nutrition guidance'] }
       ]
     }));
   }
@@ -401,10 +401,10 @@ export const getTemplatePreset = (category: string, name: string): WebsiteConfig
     components.push(createComponent('Products', {
       title: 'Exclusive Listings',
       items: [
-        { name: 'The Meridian Heights Penthouse', price: '$1.25M', desc: 'Luxury panoramic urban views.', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Whispering Pines Villa', price: '$780k', desc: '4 bed family home with wide pool.', img: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Oceanview Estate', price: '$2.5M', desc: 'Private beach access, 6 bedrooms.', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Modern City Loft', price: '$550k', desc: 'Open floor plan, industrial style.', img: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=400&q=80' }
+        { name: 'The Meridian Heights Penthouse', price: '₹1.25M', desc: 'Luxury panoramic urban views.', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80' },
+        { name: 'Whispering Pines Villa', price: '₹780k', desc: '4 bed family home with wide pool.', img: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&w=400&q=80' },
+        { name: 'Oceanview Estate', price: '₹2.5M', desc: 'Private beach access, 6 bedrooms.', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80' },
+        { name: 'Modern City Loft', price: '₹550k', desc: 'Open floor plan, industrial style.', img: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=400&q=80' }
       ]
     }));
   }

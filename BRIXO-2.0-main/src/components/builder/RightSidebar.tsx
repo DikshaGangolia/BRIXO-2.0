@@ -59,9 +59,9 @@ export const RightSidebar: React.FC = () => {
     if (comp.type === 'Navbar' || comp.type === 'Footer') {
       newRow = 'New Link';
     } else if (comp.type === 'Products') {
-      newRow = { name: 'New Item Product', price: '$29', desc: 'Detail specs.', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80' };
+      newRow = { name: 'New Item Product', price: '₹29', desc: 'Detail specs.', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80' };
     } else if (comp.type === 'Pricing') {
-      newRow = { name: 'Premium Plan', price: '$99', period: 'mo', features: ['Feature 1', 'Feature 2'] };
+      newRow = { name: 'Premium Plan', price: '₹99', period: 'mo', features: ['Feature 1', 'Feature 2'] };
     } else if (comp.type === 'FAQ') {
       newRow = { q: 'Question Title', a: 'Answer description text.' };
     } else if (comp.type === 'Testimonials') {

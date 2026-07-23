@@ -70,5 +70,9 @@ export interface DeployState {
   progress: number;
   logs: string[];
   url: string | null;
+  slug?: string;
+  qrCodeDataUrl?: string;
+  qrCodeSvg?: string;
   targetPlatform: 'Vercel' | 'Netlify' | 'GitHub Pages' | null;
 }
+

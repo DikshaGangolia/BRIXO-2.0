@@ -1,5 +1,7 @@
 import type { WebsiteProject, WebPage, ComponentBlock, DesignTokens } from '../types/builder';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'https://brixo-2-0.onrender.com';
+
 // Escape helper for text going into HTML
 const esc = (s: any): string =>
   String(s ?? '')
@@ -298,6 +300,7 @@ export const generatePublishedHTML = (project: WebsiteProject): string => {
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>${title}</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 ${fontLink(tokens.fontFamily)}
@@ -331,7 +334,7 @@ ${pageNav}
   <footer id="brixo-cart-footer" style="padding:20px;border-top:1px solid #1e293b;display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.7">Subtotal</span>
-      <span id="brixo-cart-subtotal" style="font-size:22px;font-weight:900">$0.00</span>
+      <span id="brixo-cart-subtotal" style="font-size:22px;font-weight:900">₹0.00</span>
     </div>
     <button onclick="window.__brixoCheckout()" style="width:100%;padding:14px;background:${primary};color:#fff;border:0;border-radius:${radius};font-weight:800;font-size:14px;cursor:pointer">
       Proceed to Checkout
@@ -347,7 +350,7 @@ ${pageNav}
     <header style="padding:20px 24px;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-weight:800;font-size:18px">Checkout</div>
-        <div id="brixo-checkout-total" style="font-size:12px;opacity:.7;margin-top:2px">Total $0.00</div>
+        <div id="brixo-checkout-total" style="font-size:12px;opacity:.7;margin-top:2px">Total ₹0.00</div>
       </div>
       <button onclick="window.__brixoCloseCheckout()" aria-label="Close" style="background:transparent;border:0;color:#94a3b8;cursor:pointer;font-size:24px;line-height:1">×</button>
     </header>
@@ -364,39 +367,19 @@ ${pageNav}
       <input id="brixo-co-address" type="text" placeholder="Shipping address" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:20px;font-size:14px;box-sizing:border-box" />
 
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:10px">Payment Method</div>
-      <div id="brixo-pay-methods" style="display:grid;gap:10px;margin-bottom:18px">
-        <label class="brixo-pay-opt" data-method="card" style="display:flex;align-items:center;gap:12px;padding:14px;background:#1e293b;border:2px solid ${primary};border-radius:${radius};cursor:pointer">
-          <input type="radio" name="brixo-pay" value="card" checked style="accent-color:${primary}" />
-          <span style="font-size:20px">💳</span>
-          <span style="font-weight:700;font-size:14px">Credit / Debit Card</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+        <label id="brixo-opt-online" class="brixo-pay-opt" style="display:flex;align-items:center;gap:8px;padding:12px;background:#1e293b;border:2px solid ${primary};border-radius:${radius};cursor:pointer" onclick="window.__brixoSetMethod('RAZORPAY')">
+          <input type="radio" name="brixo-co-method" value="RAZORPAY" checked style="accent-color:${primary}" />
+          <span style="font-weight:700;font-size:12px">Pay Online</span>
         </label>
-        <label class="brixo-pay-opt" data-method="paypal" style="display:flex;align-items:center;gap:12px;padding:14px;background:#1e293b;border:2px solid #334155;border-radius:${radius};cursor:pointer">
-          <input type="radio" name="brixo-pay" value="paypal" style="accent-color:${primary}" />
-          <span style="font-size:20px">🅿️</span>
-          <span style="font-weight:700;font-size:14px">PayPal</span>
+        <label id="brixo-opt-cod" class="brixo-pay-opt" style="display:flex;align-items:center;gap:8px;padding:12px;background:#1e293b;border:2px solid #334155;border-radius:${radius};cursor:pointer" onclick="window.__brixoSetMethod('COD')">
+          <input type="radio" name="brixo-co-method" value="COD" style="accent-color:${primary}" />
+          <span style="font-weight:700;font-size:12px">Cash on Delivery</span>
         </label>
-        <label class="brixo-pay-opt" data-method="apple" style="display:flex;align-items:center;gap:12px;padding:14px;background:#1e293b;border:2px solid #334155;border-radius:${radius};cursor:pointer">
-          <input type="radio" name="brixo-pay" value="apple" style="accent-color:${primary}" />
-          <span style="font-size:20px"></span>
-          <span style="font-weight:700;font-size:14px">Apple Pay</span>
-        </label>
-        <label class="brixo-pay-opt" data-method="cod" style="display:flex;align-items:center;gap:12px;padding:14px;background:#1e293b;border:2px solid #334155;border-radius:${radius};cursor:pointer">
-          <input type="radio" name="brixo-pay" value="cod" style="accent-color:${primary}" />
-          <span style="font-size:20px">💵</span>
-          <span style="font-weight:700;font-size:14px">Cash on Delivery</span>
-        </label>
-      </div>
-
-      <div id="brixo-card-fields">
-        <input id="brixo-cc-num" type="text" inputmode="numeric" placeholder="Card number  •  1234 5678 9012 3456" maxlength="19" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:12px;font-size:14px;box-sizing:border-box;letter-spacing:2px" />
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
-          <input id="brixo-cc-exp" type="text" placeholder="MM / YY" maxlength="7" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};font-size:14px;box-sizing:border-box" />
-          <input id="brixo-cc-cvc" type="text" inputmode="numeric" placeholder="CVC" maxlength="4" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};font-size:14px;box-sizing:border-box" />
-        </div>
       </div>
 
       <button id="brixo-pay-btn" onclick="window.__brixoPay()" style="width:100%;padding:14px;background:${primary};color:#fff;border:0;border-radius:${radius};font-weight:800;font-size:14px;cursor:pointer">
-        Pay Now
+        Pay with Razorpay
       </button>
       <p style="text-align:center;font-size:11px;opacity:.5;margin:12px 0 0">🔒 checkout — payment is processed</p>
     </div>
@@ -456,7 +439,7 @@ ${pageNav}
       footer.style.display = 'block';
     }
     countEl.textContent = count() + ' item' + (count() === 1 ? '' : 's');
-    subEl.textContent = '$' + total().toFixed(2);
+    subEl.textContent = '₹' + total().toFixed(2);
     renderBadge();
   }
 
@@ -497,9 +480,31 @@ ${pageNav}
     if (state.items.length === 0) return;
     window.__brixoCloseCart();
     var modal = document.getElementById('brixo-checkout-backdrop');
-    document.getElementById('brixo-checkout-total').textContent = 'Total $' + total().toFixed(2) + ' • ' + count() + ' item' + (count()===1?'':'s');
+    var modal = document.getElementById('brixo-checkout-backdrop');
+    document.getElementById('brixo-checkout-total').textContent = 'Total ₹' + total().toFixed(2) + ' • ' + count() + ' item' + (count()===1?'':'s');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+  };
+
+  window.__brixoCoMethod = 'RAZORPAY';
+  window.__brixoSetMethod = function(method) {
+    window.__brixoCoMethod = method;
+    var r1 = document.querySelector('input[name="brixo-co-method"][value="RAZORPAY"]');
+    var r2 = document.querySelector('input[name="brixo-co-method"][value="COD"]');
+    var optOnline = document.getElementById('brixo-opt-online');
+    var optCod = document.getElementById('brixo-opt-cod');
+    var payBtn = document.getElementById('brixo-pay-btn');
+    if (method === 'RAZORPAY') {
+      if(r1) r1.checked = true;
+      if(optOnline) optOnline.style.borderColor = '${primary}';
+      if(optCod) optCod.style.borderColor = '#334155';
+      if(payBtn) payBtn.textContent = 'Pay with Razorpay';
+    } else {
+      if(r2) r2.checked = true;
+      if(optOnline) optOnline.style.borderColor = '#334155';
+      if(optCod) optCod.style.borderColor = '${primary}';
+      if(payBtn) payBtn.textContent = 'Place COD Order';
+    }
   };
 
   window.__brixoCloseCheckout = function(){
@@ -507,100 +512,147 @@ ${pageNav}
     document.body.style.overflow = '';
   };
 
-  // Payment method switching
-  document.addEventListener('change', function(e){
-    if (e.target && e.target.name === 'brixo-pay') {
-      var method = e.target.value;
-      document.querySelectorAll('.brixo-pay-opt').forEach(function(opt){
-        opt.style.borderColor = opt.getAttribute('data-method') === method ? '${primary}' : '#334155';
-      });
-      document.getElementById('brixo-card-fields').style.display = method === 'card' ? 'block' : 'none';
-      var labels = { card:'Pay Now', paypal:'Continue with PayPal', apple:'Pay with Apple Pay', cod:'Place Order' };
-      document.getElementById('brixo-pay-btn').textContent = labels[method] || 'Pay Now';
-    }
-  });
-
-  // Card number formatting
-  document.addEventListener('input', function(e){
-    if (e.target && e.target.id === 'brixo-cc-num') {
-      var v = e.target.value.replace(/\\D/g,'').slice(0,16);
-      e.target.value = v.replace(/(.{4})/g,'$1 ').trim();
-    }
-    if (e.target && e.target.id === 'brixo-cc-exp') {
-      var v = e.target.value.replace(/\\D/g,'').slice(0,4);
-      e.target.value = v.length > 2 ? v.slice(0,2) + ' / ' + v.slice(2) : v;
-    }
-  });
-
   window.__brixoPay = function(){
     var email = (document.getElementById('brixo-co-email')||{}).value || '';
     var phone = (document.getElementById('brixo-co-phone')||{}).value || '';
     var name = (document.getElementById('brixo-co-name')||{}).value || '';
     var addr = (document.getElementById('brixo-co-address')||{}).value || '';
-    var method = (document.querySelector('input[name=brixo-pay]:checked')||{}).value || 'card';
     if (!email || !name || !phone || !addr) {
-  toast('Please fill in your contact, phone & shipping details');
-  return;
-}
-    if (method === 'card') {
-      var num = (document.getElementById('brixo-cc-num')||{}).value.replace(/\\s/g,'');
-      var exp = (document.getElementById('brixo-cc-exp')||{}).value;
-      var cvc = (document.getElementById('brixo-cc-cvc')||{}).value;
-      if (num.length < 13 || !exp || !cvc) { toast('Please enter valid card details'); return; }
+      toast('Please fill in your contact, phone & shipping details');
+      return;
     }
+
     var btn = document.getElementById('brixo-pay-btn');
     var orig = btn.textContent;
-    btn.textContent = 'Processing…'; btn.disabled = true;
-    setTimeout(function(){
-      var t = total().toFixed(2);
-      var n = count();
-      var orderId = 'ORD-' + Math.random().toString(36).slice(2,8).toUpperCase();
-      fetch("https://brixo-2-0.onrender.com/api/email/send-email", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-  name: name,
-  email: email,
-  phone: phone,
-  address: addr,
-  productName: n + " items",
-  orderId: orderId,
-  total: t
-})
-})
-.then(res => res.json())
-.then(data => console.log("Email status:", data))
-.catch(err => console.error("Email error:", err));
-fetch("https://brixo-2-0.onrender.com/api/twilio/send-sms", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    phone: phone,
-    name: name,
-    productName: n + " items",
-    orderId: orderId,
-    total: t
-  })
-})
-.then(res => res.json())
-.then(data => console.log("SMS status:", data))
-.catch(err => console.error("SMS error:", err));
+    var t = total().toFixed(2);
+    var n = count();
 
-      window.__brixoCloseCheckout();
-      toast('✅ Payment successful! Order ' + orderId + ' — $' + t);
-      setTimeout(function(){ alert('Order confirmed!\\n\\nOrder #' + orderId + '\\nItems: ' + n + '\\nTotal: $' + t + '\\nPayment: ' + method.toUpperCase() + '\\n\\nA confirmation has been sent to ' + email + '.'); }, 400);
-      state.items = [];
-      save();
-      renderItems();
+    if (window.__brixoCoMethod === 'COD') {
+      btn.textContent = 'Placing Order…'; btn.disabled = true;
+      fetch("${API_BASE}/api/orders/place-cod", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: name,
+          customerPhone: phone,
+          customerEmail: email,
+          items: state.items,
+          totalAmount: t,
+          siteId: "${jsEsc(project.id)}"
+        })
+      })
+      .then(function(res){ return res.json(); })
+      .then(function(resData){
+        btn.textContent = orig; btn.disabled = false;
+        if (resData.success) {
+          window.__brixoCloseCheckout();
+          var orderId = resData.order ? resData.order.orderId : 'ORD-' + Math.random().toString(36).slice(2,8).toUpperCase();
+          toast('✅ COD Order placed successfully! ID: ' + orderId);
+          alert('Order Confirmed!\n\nOrder ID: ' + orderId + '\nCustomer: ' + name + '\nTotal: ₹' + t + '\nPayment Method: Cash on Delivery\nPayment Status: Pending\n\nSMS confirmation sent to ' + phone + '.');
+          state.items = [];
+          save();
+          renderItems();
+        } else {
+          toast('❌ Placement failed: ' + resData.message);
+        }
+      })
+      .catch(function(err){
+        btn.textContent = orig; btn.disabled = false;
+        console.error('COD placement error:', err);
+        toast('Order placement network error');
+      });
+      return;
+    }
+
+    btn.textContent = 'Connecting Razorpay…'; btn.disabled = true;
+
+    // 1. Create Razorpay Order
+    fetch("${API_BASE}/api/payment/create-cart-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: t, items: state.items, customerName: name, customerPhone: phone })
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(resData){
+      if (!resData.success) {
+        toast('Failed to initialize Razorpay order');
+        btn.textContent = orig; btn.disabled = false;
+        return;
+      }
+      var order = resData.order;
+      var key_id = resData.key_id;
+
+      var options = {
+        key: key_id,
+        amount: order.amount,
+        currency: "INR",
+        name: "${jsEsc(project.name)}",
+        description: "Order for " + n + " items",
+        order_id: order.id,
+        prefill: { name: name, contact: phone, email: email },
+        theme: { color: "${primary}" },
+        handler: function(rzpResp){
+          btn.textContent = 'Verifying Payment…';
+          fetch("${API_BASE}/api/payment/verify-cart-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: rzpResp.razorpay_order_id,
+              razorpay_payment_id: rzpResp.razorpay_payment_id,
+              razorpay_signature: rzpResp.razorpay_signature,
+              customerName: name,
+              customerPhone: phone,
+              customerEmail: email,
+              items: state.items,
+              totalAmount: t,
+              siteId: "${jsEsc(project.id)}"
+            })
+          })
+          .then(function(vRes){ return vRes.json(); })
+          .then(function(vData){
+            btn.textContent = orig; btn.disabled = false;
+            if (vData.success) {
+              window.__brixoCloseCheckout();
+              var orderId = vData.order ? vData.order.orderId : 'ORD-' + Math.random().toString(36).slice(2,8).toUpperCase();
+              toast('✅ Payment verified & order saved! ID: ' + orderId);
+              alert('Order Confirmed!\\n\\nOrder ID: ' + orderId + '\\nCustomer: ' + name + '\\nTotal Paid: ₹' + t + '\\nPayment Status: PAID\\n\\nSMS confirmation sent to ' + phone + '.');
+              state.items = [];
+              save();
+              renderItems();
+            } else {
+              toast('❌ Verification failed: ' + vData.message);
+            }
+          })
+          .catch(function(err){
+            btn.textContent = orig; btn.disabled = false;
+            console.error('Verify error:', err);
+            toast('Payment verification network error');
+          });
+        },
+        modal: {
+          ondismiss: function(){
+            btn.textContent = orig; btn.disabled = false;
+          }
+        }
+      };
+
+      if (window.Razorpay) {
+        var rzp = new window.Razorpay(options);
+        rzp.open();
+      } else {
+        toast('Razorpay SDK not loaded');
+        btn.textContent = orig; btn.disabled = false;
+      }
+    })
+    .catch(function(err){
+      console.error('Order err:', err);
+      toast('Error initiating Razorpay checkout');
       btn.textContent = orig; btn.disabled = false;
-    }, 1400);
+    });
   };
 
   window.__brixoNotify = function(msg){ toast(msg); };
+
 
   // Cart item click delegation
   document.addEventListener('click', function(e){

@@ -5,6 +5,7 @@ import axios from 'axios';
 import {
   Sparkles,
   Trash2,
+  CreditCard,
   Copy,
   Download,
   Edit3,
@@ -24,15 +25,21 @@ import {
   BadgeCheck,
   Check,
   Crown,
-  Zap,
   X,
-  Menu
+  Menu,
+  Code2,
+  Zap
 } from 'lucide-react';
+
 import { useAuthStore } from '../../store/useAuthStore';
 import { useBuilderStore } from '../../store/useBuilderStore';
 import { getTemplatePreset } from '../../utils/templates';
 import { exportSiteZip } from '../../utils/export';
 import type { WebsiteProject } from '../../types/builder';
+import { PaymentHistoryModal } from './PaymentHistoryModal';
+import { ShopkeeperOrdersModal } from './ShopkeeperOrdersModal';
+import { OwnerDeveloperPanelModal } from './OwnerDeveloperPanelModal';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://brixo-2-0.onrender.com';
 
 export const Dashboard: React.FC = () => {
   const { session, projects, loadProjects, createProject, deleteProject, duplicateProject, logout } = useAuthStore();
@@ -50,6 +57,10 @@ export const Dashboard: React.FC = () => {
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<{ category: string; name: string } | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showBillingHistory, setShowBillingHistory] = useState(false);
+  const [showShopkeeperOrders, setShowShopkeeperOrders] = useState(false);
+  const [devPanelSiteId, setDevPanelSiteId] = useState<string | null>(null);
+
   useEffect(() => {
     loadProjects();
   }, []);
@@ -109,11 +120,11 @@ export const Dashboard: React.FC = () => {
   const handlePayment = async (planType: 'pro' | 'max') => {
     try {
       const response = await axios.post(
-  "https://brixo-2-0.onrender.com/api/payment/create-order",
-  {
-    planType,
-  }
-);
+        `${API_BASE_URL}/api/payment/create-order`,
+        {
+          planType,
+        }
+      );
 
       if (!response.data || !response.data.success) {
         alert("Failed to create Razorpay order.");
@@ -132,15 +143,15 @@ export const Dashboard: React.FC = () => {
         handler: async function (response: any) {
           try {
             const verifyRes = await axios.post(
-  "https://brixo-2-0.onrender.com/api/payment/verify-payment",
-  {
-    razorpay_order_id: response.razorpay_order_id,
-    razorpay_payment_id: response.razorpay_payment_id,
-    razorpay_signature: response.razorpay_signature,
-    email: session?.email,
-    planType,
-  }
-);
+              `${API_BASE_URL}/api/payment/verify-payment`,
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                email: session?.email,
+                planType,
+              }
+            );
 
             if (verifyRes.data && verifyRes.data.success) {
               alert(`Congratulations! Plan upgraded successfully to ${planType.toUpperCase()}.`);
@@ -175,37 +186,71 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleCreateWebsite = async () => {
-    if (!newSiteName.trim() || !selectedTemplate) return;
+    const siteName = newSiteName.trim();
+    if (!siteName) {
+      alert("Please enter a valid website name to launch the builder.");
+      return;
+    }
 
-    const templateConfig = getTemplatePreset(selectedTemplate.category, newSiteName);
+    const template = selectedTemplate || { category: 'Ecommerce', name: 'General Store' };
+    const templateConfig = getTemplatePreset(template.category, siteName);
 
-    // Create project on backend first to get the real _id
-    const savedId = await createProject({
-      id: '', // will be replaced by backend response
-      name: newSiteName,
-      category: selectedTemplate.category,
-      templateName: selectedTemplate.name,
-      config: templateConfig,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
-
-    if (savedId) {
-      // Use the real backend _id for navigation
-      loadProject({
-        id: savedId,
-        name: newSiteName,
-        category: selectedTemplate.category,
-        templateName: selectedTemplate.name,
+    try {
+      // Try creating project on backend first
+      let finalId = await createProject({
+        id: '',
+        name: siteName,
+        category: template.category,
+        templateName: template.name,
         config: templateConfig,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
 
+      // Fallback if backend API call fails or returns empty string
+      if (!finalId) {
+        finalId = `proj_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const localProject: WebsiteProject = {
+          id: finalId,
+          name: siteName,
+          category: template.category,
+          templateName: template.name,
+          config: templateConfig,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        useAuthStore.setState(state => ({
+          projects: [localProject, ...state.projects]
+        }));
+      }
+
+      // Retrieve full target project object
+      const currentProjects = useAuthStore.getState().projects;
+      const targetProject = currentProjects.find(p => p.id === finalId) || {
+        id: finalId,
+        name: siteName,
+        category: template.category,
+        templateName: template.name,
+        config: templateConfig,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // Initialize Builder Store
+      loadProject(targetProject);
+
       setShowCreateModal(false);
-      navigate(`/builder/${savedId}`);
+      setNewSiteName('');
+
+      // Navigate to builder
+      navigate(`/builder/${finalId}`);
+    } catch (err: any) {
+      console.error("Launch Builder Error:", err);
+      alert("Failed to launch builder: " + (err?.message || "Unknown error"));
     }
   };
+
 
   const handleExport = async (project: WebsiteProject) => {
     try {
@@ -255,11 +300,21 @@ p-5
             <span className="text-3xs font-bold uppercase tracking-wider text-slate-500">Navigation</span>
             <div className="space-y-1.5 text-xs font-bold text-slate-300">
               <button
-  onClick={() => setMobileMenuOpen(false)}
-  className="w-full flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-xl text-blue-400"
->
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-xl text-blue-400"
+              >
                 <FolderOpen className="w-4 h-4" />
                 My Websites
+              </button>
+              <button
+                onClick={() => {
+                  setShowShopkeeperOrders(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 rounded-xl text-slate-300 transition-all border border-slate-800 cursor-pointer"
+              >
+                <ShoppingBag className="w-4 h-4 text-blue-400" />
+                Customer Orders
               </button>
             </div>
           </div>
@@ -295,6 +350,13 @@ p-5
                 All Max features unlocked
               </div>
             )}
+            <button
+              onClick={() => setShowBillingHistory(true)}
+              className="w-full py-1.5 bg-slate-900 hover:bg-slate-800 text-[10px] font-bold rounded-lg text-slate-300 transition-all border border-slate-800 flex items-center justify-center gap-1 cursor-pointer mt-2"
+            >
+              <CreditCard className="w-3 h-3 text-blue-450" />
+              Billing History
+            </button>
           </div>
 
           <div className="flex items-center gap-3 mt-1">
@@ -418,13 +480,21 @@ lg:space-y-8
                   <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 border-t border-slate-800/50 pt-4 mt-6">
                     <button
                       onClick={() => {
-  loadProject(proj);
-  navigate(`/builder/${proj.id}`);
-}}
+                        loadProject(proj);
+                        navigate(`/builder/${proj.id}`);
+                      }}
                       className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-500 text-3xs font-bold rounded-lg text-white flex items-center justify-center gap-1 transition-all"
                     >
                       <Edit3 className="w-3 h-3" />
                       Visual Edit
+                    </button>
+                    <button
+                      onClick={() => setDevPanelSiteId(proj.id)}
+                      title="Open Owner Developer Panel"
+                      className="py-1.5 px-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-3xs font-bold rounded-lg text-white flex items-center justify-center gap-1 transition-all shadow cursor-pointer"
+                    >
+                      <Code2 className="w-3 h-3" />
+                      Dev Panel
                     </button>
                     <button
                       onClick={() => duplicateProject(proj.id)}
@@ -433,6 +503,7 @@ lg:space-y-8
                     >
                       <Copy className="w-3.5 h-3.5" />
                     </button>
+
                     <button
                       onClick={() => handleExport(proj)}
                       title="Download Source Code ZIP"
@@ -495,7 +566,7 @@ lg:space-y-8
 
       {/* WEBSITE NAME PROMPT MODAL */}
       <AnimatePresence>
-        {showCreateModal && selectedTemplate && (
+        {showCreateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -504,7 +575,7 @@ lg:space-y-8
               className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm space-y-4 shadow-2xl text-slate-100"
             >
               <div className="space-y-1">
-                <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest block">{selectedTemplate.category} PRESET</span>
+                <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest block">{(selectedTemplate?.category || 'General').toUpperCase()} PRESET</span>
                 <h3 className="font-extrabold text-base text-slate-200">Initialize Visual Website</h3>
                 <p className="text-3xs text-slate-400">Give your project a name to generate initial assets and compile the canvas.</p>
               </div>
@@ -734,6 +805,26 @@ lg:space-y-8
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showBillingHistory && (
+          <PaymentHistoryModal onClose={() => setShowBillingHistory(false)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showShopkeeperOrders && (
+          <ShopkeeperOrdersModal onClose={() => setShowShopkeeperOrders(false)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {devPanelSiteId && (
+          <OwnerDeveloperPanelModal siteId={devPanelSiteId} onClose={() => setDevPanelSiteId(null)} />
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };
+
+

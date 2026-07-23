@@ -24,22 +24,24 @@ router.post("/send-sms", async (req, res) => {
       productName,
       orderId,
       total,
+      status,
     } = req.body;
     console.log("PHONE RECEIVED:", phone);
     const message = await client.messages.create({
       body: `🛒 BRIXO
 
-Hi ${name},
+Hi ${name || "Customer"},
 
 Your order has been placed successfully!
 
-Order ID: ${orderId}
-Product: ${productName}
-Total: $${total}
+Order ID: ${orderId || "ORD-" + Date.now().toString().slice(-6)}
+Product: ${productName || "Items"}
+Total: ₹${total || "0.10"}
+Payment Status: ${status || "PAID"}
 
 Thank you for shopping with BRIXO!`,
       from: process.env.TWILIO_PHONE_NUMBER,
-      to: phone,
+      to: phone || "+919528620651",
     });
 
     res.json({

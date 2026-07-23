@@ -48,7 +48,7 @@ export const useCartStore = create<CartState>((set, get) => ({
           {
             id: `${item.name}-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
             name: item.name,
-            price: item.price,
+            price: item.price.startsWith('₹') ? item.price : `₹${item.price.replace(/[^0-9.]/g, '') || '0.10'}`,
             image: item.image,
             quantity: 1,
             siteId: item.siteId,
@@ -95,7 +95,8 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   getCartTotal: () => {
     const total = get().items.reduce((sum, item) => {
-      const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+      const rawNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+      const priceNum = isNaN(rawNum) || rawNum <= 0 ? 0.10 : rawNum;
       return sum + priceNum * item.quantity;
     }, 0);
     return total.toFixed(2);

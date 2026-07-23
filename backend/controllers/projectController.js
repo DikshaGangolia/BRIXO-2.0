@@ -1,5 +1,6 @@
 const Project = require("../models/Project");
-
+const PublishedWebsite = require("../models/PublishedWebsite");
+const QRCode = require("qrcode");
 
 // Create project
 const createProject = async (req, res) => {
@@ -36,7 +37,6 @@ const createProject = async (req, res) => {
   }
 };
 
-
 // Get all projects
 const getProjects = async (req, res) => {
   try {
@@ -61,8 +61,6 @@ const getProjects = async (req, res) => {
   }
 };
 
-
-// Get single project
 // Get single project (Private)
 const getProjectById = async (req, res) => {
   try {
@@ -94,8 +92,6 @@ const getProjectById = async (req, res) => {
   }
 };
 
-
-// Get public project (No login required)
 // Get public project (No login required)
 const getPublicProjectById = async (req, res) => {
   try {
@@ -160,7 +156,6 @@ const updateProject = async (req, res) => {
   }
 };
 
-
 // Delete project
 const deleteProject = async (req, res) => {
   try {
@@ -192,6 +187,8 @@ const deleteProject = async (req, res) => {
     });
   }
 };
+
+// Publish project & generate unique URL + high-res QR code
 const publishProject = async (req, res) => {
   try {
     const project = await Project.findOne({
@@ -206,31 +203,141 @@ const publishProject = async (req, res) => {
       });
     }
 
-    // Generate slug only once
+    // Generate unique slug only once to keep URL stable on republish
     if (!project.slug) {
-      project.slug =
-        project.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "") +
-        "-" +
-        Math.random().toString(36).substring(2, 7);
+      const sanitizedTitle = project.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      project.slug = `${sanitizedTitle}-${Math.random().toString(36).substring(2, 7)}`;
     }
 
     project.published = true;
-
     await project.save();
 
-    // Use the actual production backend URL for the published site
-    const baseUrl = process.env.PRODUCTION_URL || 'https://brixo-builder.vercel.app';
+    const frontendBaseUrl = process.env.FRONTEND_URL || "https://your-domain.com";
+    const publishUrl = `${frontendBaseUrl}/site/${project.slug}`;
+
+    // Generate high-resolution PNG Data URL
+    const qrCodeDataUrl = await QRCode.toDataURL(publishUrl, {
+      width: 600,
+      margin: 2,
+      color: {
+        dark: "#0f172a",
+        light: "#ffffff",
+      },
+    });
+
+    // Generate SVG string for vector exports
+    const qrCodeSvg = await QRCode.toString(publishUrl, {
+      type: "svg",
+      margin: 2,
+      color: {
+        dark: "#0f172a",
+        light: "#ffffff",
+      },
+    });
+
+    // Create or update record in PublishedWebsite collection in MongoDB
+    const publishedRecord = await PublishedWebsite.findOneAndUpdate(
+      { project: project._id },
+      {
+        project: project._id,
+        user: req.user.id,
+        title: project.title,
+        slug: project.slug,
+        url: publishUrl,
+        qrCodeDataUrl,
+        qrCodeSvg,
+        status: "PUBLISHED",
+        data: project.data,
+        publishedAt: new Date(),
+      },
+      { upsert: true, new: true }
+    );
+
     res.json({
       success: true,
       project,
-      publishUrl: `${baseUrl}/preview/${project._id}`,
+      publishUrl,
+      slug: project.slug,
+      qrCodeDataUrl,
+      qrCodeSvg,
+      publishedRecord,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Publish error:", error);
 
+    res.status(500).json({
+      success: false,
+      message: "Server error publishing site: " + error.message,
+    });
+  }
+};
+
+// Unpublish project & set status to UNPUBLISHED
+const unpublishProject = async (req, res) => {
+  try {
+    const project = await Project.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    project.published = false;
+    await project.save();
+
+    await PublishedWebsite.findOneAndUpdate(
+      { project: project._id },
+      { status: "UNPUBLISHED" }
+    );
+
+    res.json({
+      success: true,
+      message: "Website unpublished successfully",
+      project,
+    });
+  } catch (error) {
+    console.error("Unpublish error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error unpublishing site",
+    });
+  }
+};
+
+// Get public website by slug (No auth required)
+const getPublicSiteBySlug = async (req, res) => {
+  try {
+    const site = await PublishedWebsite.findOne({ slug: req.params.slug });
+
+    if (!site) {
+      return res.status(404).json({
+        success: false,
+        message: "Website not found",
+      });
+    }
+
+    if (site.status === "UNPUBLISHED") {
+      return res.status(403).json({
+        success: false,
+        status: "UNPUBLISHED",
+        message: "Website Not Available",
+      });
+    }
+
+    res.json({
+      success: true,
+      site,
+    });
+  } catch (error) {
+    console.error("Get public site by slug error:", error);
     res.status(500).json({
       success: false,
       message: "Server Error",
@@ -246,4 +353,6 @@ module.exports = {
   updateProject,
   deleteProject,
   publishProject,
+  unpublishProject,
+  getPublicSiteBySlug,
 };

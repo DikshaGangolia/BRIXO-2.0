@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const premium = require("../middleware/premiumMiddleware");
 
 const {
   createProject,
@@ -9,18 +10,23 @@ const {
   updateProject,
   deleteProject,
   publishProject,
+  unpublishProject,
+  getPublicSiteBySlug,
 } = require("../controllers/projectController");
+
 // Create project
 router.post("/", createProject);
 
-// Public Preview Route
+// Public Preview & Slug Routes (No Auth required)
+router.get("/public/slug/:slug", getPublicSiteBySlug);
 router.get("/public/:id", getPublicProjectById);
 
 // Get all projects
 router.get("/", getProjects);
 
-// Publish project
-router.put("/publish/:id", publishProject);
+// Publish & Unpublish project
+router.put("/publish/:id", premium, publishProject);
+router.put("/unpublish/:id", unpublishProject);
 
 // Get single project
 router.get("/:id", getProjectById);

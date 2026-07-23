@@ -17,13 +17,13 @@ export const Signup: React.FC = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    const success = await signup(name, email, password);
+    const res = await signup(name, email, password);
     setIsLoading(false);
 
-    if (success) {
+    if (res.success) {
       navigate('/dashboard');
     } else {
-      setError('An account with this email address already exists.');
+      setError(res.message || 'An account with this email address already exists.');
     }
   };
 
