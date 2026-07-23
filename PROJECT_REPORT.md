@@ -79,6 +79,27 @@ Resolved the issue where the generated QR Code contained a local URL (`localhost
 
 ---
 
+### Cash on Delivery (COD) Payment Flow
+Implemented COD payment option alongside Razorpay checkout, allowing customers to select cash on delivery when placing orders, and providing status updates on the Shopkeeper Dashboard.
+
+* **Fixes & Improvements**:
+  - **Checkout Selector**: Added interactive "Pay Online" and "Cash on Delivery" radio selectors to both builder preview and published websites checkout drawers.
+  - **COD Direct Ordering**: Created the public `POST /api/orders/place-cod` endpoint to save COD orders with `PENDING (COD)` payment status and trigger SMS confirmations.
+  - **Twilio Dual SMS Alerting**: Configured order confirmation SMS dispatches via Twilio to both the customer and the shopkeeper.
+  - **Interactive Status Workflow**: Added order status selector (`Pending`, `Packed`, `Shipped`, `Delivered`, `Cancelled`) on the Shopkeeper Sales Dashboard.
+  - **Status Transitions**: Programmed logic so that when the shopkeeper changes status to `Delivered`, it automatically marks the COD order payment as `PAID`.
+* **Files Modified**:
+  - [Order.js](file:///c:/Users/shiva/OneDrive/Desktop/BRIXO-22.0/BRIXO-2.0/backend/models/Order.js)
+  - [orderController.js](file:///c:/Users/shiva/OneDrive/Desktop/BRIXO-22.0/BRIXO-2.0/backend/controllers/orderController.js)
+  - [orderRoutes.js](file:///c:/Users/shiva/OneDrive/Desktop/BRIXO-22.0/BRIXO-2.0/backend/routes/orderRoutes.js)
+  - [CartSidebar.tsx](file:///c:/Users/shiva/OneDrive/Desktop/BRIXO-22.0/BRIXO-2.0/BRIXO-2.0-main/src/components/builder/CartSidebar.tsx)
+  - [publishHtml.ts](file:///c:/Users/shiva/OneDrive/Desktop/BRIXO-22.0/BRIXO-2.0/BRIXO-2.0-main/src/utils/publishHtml.ts)
+  - [ShopkeeperOrdersModal.tsx](file:///c:/Users/shiva/OneDrive/Desktop/BRIXO-22.0/BRIXO-2.0/BRIXO-2.0-main/src/components/dashboard/ShopkeeperOrdersModal.tsx)
+* **Status**: Completed
+* **Completed Date**: 2026-07-23
+
+---
+
 ## Current Progress
 
 - **Analyzed**: Analyzed static compilation and React Hook runtime checks.
