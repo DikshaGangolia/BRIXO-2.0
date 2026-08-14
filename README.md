@@ -36,10 +36,12 @@ BRIXO-2.0/
 ├── backend/
 ├── README.md
 └── package.json
+
 ⚙️ Getting Started
 1. Clone the repository
 git clone https://github.com/DikshaGangolia/BRIXO-2.0.git
 cd BRIXO-2.0
+
 2. Install dependencies
 npm install
 
