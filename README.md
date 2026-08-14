@@ -1,8 +1,8 @@
-BRIXO 2.0
+# BRIXO 2.0
 
 BRIXO 2.0 is a full-stack web builder that allows users to create, customize, preview, and publish websites through a simple visual interface.
 
-🚀 Features
+# 🚀 Features
 🧩 Visual website builder
 🎨 Customizable website components
 👤 User authentication and dashboard
@@ -14,25 +14,23 @@ BRIXO 2.0 is a full-stack web builder that allows users to create, customize, pr
 📱 Responsive web design
 🛠️ Tech Stack
 
-Frontend
-
+# Frontend
 React
 TypeScript
 Vite
 Zustand
 
-Backend
-
+# Backend
 Node.js
 Express.js
 MongoDB
 JWT Authentication
 
-Deployment
-
+# Deployment
 Vercel
 Render
-📁 Project Structure
+
+# 📁 Project Structure
 BRIXO-2.0/
 ├── frontend/
 ├── backend/
@@ -55,8 +53,7 @@ Create .env files and add the required MongoDB, JWT, Razorpay, and API configura
 
 Start the backend and frontend development servers, then open the frontend in your browser.
 
-🎯 Purpose
-
+# 🎯 Purpose
 BRIXO 2.0 aims to simplify website development by providing a visual building experience while handling authentication, project management, publishing, and e-commerce functionality in one platform.
 
 👩‍💻 Author
