@@ -46,16 +46,13 @@ npm install
 Install dependencies separately in the frontend and backend if required.
 
 3. Configure environment variables
-
 Create .env files and add the required MongoDB, JWT, Razorpay, and API configuration values.
 
 4. Run the application
-
 Start the backend and frontend development servers, then open the frontend in your browser.
 
 # 🎯 Purpose
 BRIXO 2.0 aims to simplify website development by providing a visual building experience while handling authentication, project management, publishing, and e-commerce functionality in one platform.
 
 👩‍💻 Author
-
 Diksha Gangolia
