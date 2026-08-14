@@ -57,4 +57,4 @@ Start the backend and frontend development servers, then open the frontend in yo
 BRIXO 2.0 aims to simplify website development by providing a visual building experience while handling authentication, project management, publishing, and e-commerce functionality in one platform.
 
 👩‍💻 Author
-Diksha Gangolia
+DikshaGangolia
