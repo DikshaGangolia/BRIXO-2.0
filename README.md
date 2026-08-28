@@ -15,9 +15,11 @@
 ---
 
 ## ✨ What is BRIXO 2.0?
+
 **BRIXO 2.0** is a full-stack visual web builder that helps users create, customize, preview, save, and publish websites from one platform. It combines a visual building experience with authentication, project management, publishing, and e-commerce functionality.
 
 ## 🚀 Features
+
 - 🧩 **Visual Website Builder** — Create and customize websites through an intuitive visual interface.
 - 🎨 **Customizable Components** — Build pages using flexible and reusable website components.
 - 👤 **Authentication & Dashboard** — Manage user accounts and projects securely.
