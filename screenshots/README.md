@@ -1,13 +1,17 @@
 # BRIXO 2.0 Screenshots
 
-This folder is reserved for the 8 screenshots shared for the BRIXO 2.0 project documentation and showcase.
+This is the single screenshot directory for the BRIXO 2.0 project showcase.
 
-Planned files:
-- screenshot-01.jpg
-- screenshot-02.jpg
-- screenshot-03.jpg
-- screenshot-04.jpg
-- screenshot-05.jpg
-- screenshot-06.jpg
-- screenshot-07.jpg
-- screenshot-08.jpg
+## Files
+- `all-8-project-screenshots.jpg` — Combined gallery showing all 8 key project screenshots:
+  1. Subscription Plans
+  2. Razorpay Payment Options
+  3. Razorpay Exit Confirmation
+  4. Visual Builder
+  5. Live Website Preview
+  6. Publish Website
+  7. Shopping Cart
+  8. Checkout & Payment
+- `subscription-plans.jpg` — Individual subscription plans screenshot used in the main README.
+
+The README references this folder directly so project visuals remain organized in one place.
