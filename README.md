@@ -27,10 +27,28 @@
 - 💳 **Razorpay Integration** — Support online payment workflows.
 - 📱 **Responsive Design** — Create websites that work across different screen sizes.
 
-## 🖼️ BRIXO in Action
-BRIXO brings the complete website-building workflow into one place — from creating a project to customizing it visually, previewing the result, publishing it, and supporting e-commerce features.
+## 🖼️ Project Screenshots
+The screenshots below showcase the complete BRIXO 2.0 workflow — from subscription management and visual website creation to publishing, cart functionality, checkout, and online payment.
 
-> 📸 Screenshots and project visuals can be found in the repository and project documentation. The goal of BRIXO is to make the building experience easy to understand and use without losing the flexibility of a full-stack application.
+<p align="center">
+  <img src="docs/screenshots/brixo-workflow-gallery.jpg" alt="BRIXO 2.0 project workflow screenshots" width="100%" />
+</p>
+
+### 📸 Workflow Highlights
+1. **Subscription Plans** — BRIXO tiers and upgrade options.
+2. **Razorpay Payment Flow** — Payment confirmation and exit handling.
+3. **Visual Builder** — Customize website content directly from the builder interface.
+4. **Live Preview** — Preview the generated website before publishing.
+5. **Publish Website** — Simulate and launch a website through the publishing workflow.
+6. **Shopping Cart** — Manage products and quantities on the published website.
+7. **Checkout & Payment** — Complete customer details and choose Razorpay or Cash on Delivery.
+
+### 💳 Subscription Experience
+<p align="center">
+  <img src="docs/screenshots/subscription-plans.jpg" alt="BRIXO subscription plans" width="85%" />
+</p>
+
+> 📁 Screenshot assets are organized in the `docs/screenshots/` directory to keep the repository clean and the README easy to maintain.
 
 ## 🛠️ Tech Stack
 ### Frontend
@@ -54,6 +72,8 @@ BRIXO brings the complete website-building workflow into one place — from crea
 BRIXO-2.0/
 ├── frontend/        # React + TypeScript frontend
 ├── backend/         # Node.js + Express backend
+├── docs/
+│   └── screenshots/ # Project screenshots and visual assets
 ├── README.md
 └── package.json
 ```
