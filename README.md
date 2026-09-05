@@ -28,27 +28,28 @@
 - 📱 **Responsive Design** — Create websites that work across different screen sizes.
 
 ## 🖼️ Project Screenshots
-The screenshots below showcase the complete BRIXO 2.0 workflow — from subscription management and visual website creation to publishing, cart functionality, checkout, and online payment.
+The screenshots below showcase the complete **BRIXO 2.0 workflow**. All project visuals are kept in one central `screenshots/` folder.
 
 <p align="center">
-  <img src="docs/screenshots/brixo-workflow-gallery.jpg" alt="BRIXO 2.0 project workflow screenshots" width="100%" />
+  <img src="screenshots/all-8-project-screenshots.jpg" alt="All eight BRIXO 2.0 project screenshots" width="100%" />
 </p>
 
-### 📸 Workflow Highlights
+### 📸 Screenshot Workflow
 1. **Subscription Plans** — BRIXO tiers and upgrade options.
-2. **Razorpay Payment Flow** — Payment confirmation and exit handling.
-3. **Visual Builder** — Customize website content directly from the builder interface.
-4. **Live Preview** — Preview the generated website before publishing.
-5. **Publish Website** — Simulate and launch a website through the publishing workflow.
-6. **Shopping Cart** — Manage products and quantities on the published website.
-7. **Checkout & Payment** — Complete customer details and choose Razorpay or Cash on Delivery.
+2. **Razorpay Payment Options** — Online payment interface.
+3. **Razorpay Exit Confirmation** — Payment exit handling.
+4. **Visual Builder** — Customize website content directly from the builder interface.
+5. **Live Website Preview** — Preview the generated website before publishing.
+6. **Publish Website** — Launch a website through the publishing workflow.
+7. **Shopping Cart** — Manage products and quantities on the published website.
+8. **Checkout & Payment** — Complete customer details and choose a payment method.
 
 ### 💳 Subscription Experience
 <p align="center">
-  <img src="docs/screenshots/subscription-plans.jpg" alt="BRIXO subscription plans" width="85%" />
+  <img src="screenshots/subscription-plans.jpg" alt="BRIXO subscription plans" width="85%" />
 </p>
 
-> 📁 Screenshot assets are organized in the `docs/screenshots/` directory to keep the repository clean and the README easy to maintain.
+> 📁 All screenshot assets are organized inside the single `screenshots/` directory to keep the repository clean and easy to maintain.
 
 ## 🛠️ Tech Stack
 ### Frontend
@@ -72,8 +73,7 @@ The screenshots below showcase the complete BRIXO 2.0 workflow — from subscrip
 BRIXO-2.0/
 ├── frontend/        # React + TypeScript frontend
 ├── backend/         # Node.js + Express backend
-├── docs/
-│   └── screenshots/ # Project screenshots and visual assets
+├── screenshots/     # All project screenshots and visual assets
 ├── README.md
 └── package.json
 ```
