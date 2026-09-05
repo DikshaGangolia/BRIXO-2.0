@@ -28,28 +28,19 @@
 - 📱 **Responsive Design** — Create websites that work across different screen sizes.
 
 ## 🖼️ Project Screenshots
-The screenshots below showcase the complete **BRIXO 2.0 workflow**. All project visuals are kept in one central `screenshots/` folder.
 
-<p align="center">
-  <img src="screenshots/all-8-project-screenshots.jpg" alt="All eight BRIXO 2.0 project screenshots" width="100%" />
-</p>
+BRIXO 2.0 includes a complete set of **8 workflow screenshots** covering the main user journey:
 
-### 📸 Screenshot Workflow
-1. **Subscription Plans** — BRIXO tiers and upgrade options.
-2. **Razorpay Payment Options** — Online payment interface.
-3. **Razorpay Exit Confirmation** — Payment exit handling.
-4. **Visual Builder** — Customize website content directly from the builder interface.
-5. **Live Website Preview** — Preview the generated website before publishing.
-6. **Publish Website** — Launch a website through the publishing workflow.
+1. **Dashboard** — Browse starter templates and manage website projects.
+2. **Subscription Plans** — Compare BRIXO tiers and upgrade options.
+3. **Razorpay Payment Options** — Online payment interface.
+4. **Razorpay Exit Confirmation** — Payment exit handling.
+5. **Visual Website Builder** — Customize website content directly from the builder interface.
+6. **Live Website Preview** — Preview the generated website before publishing.
 7. **Shopping Cart** — Manage products and quantities on the published website.
-8. **Checkout & Payment** — Complete customer details and choose a payment method.
+8. **Checkout & Payment** — Enter customer details and complete an order.
 
-### 💳 Subscription Experience
-<p align="center">
-  <img src="screenshots/subscription-plans.jpg" alt="BRIXO subscription plans" width="85%" />
-</p>
-
-> 📁 All screenshot assets are organized inside the single `screenshots/` directory to keep the repository clean and easy to maintain.
+> 📁 All screenshots are organized together in one central `Screenshots/` directory so the project visuals remain easy to explore and maintain.
 
 ## 🛠️ Tech Stack
 ### Frontend
@@ -73,7 +64,7 @@ The screenshots below showcase the complete **BRIXO 2.0 workflow**. All project 
 BRIXO-2.0/
 ├── frontend/        # React + TypeScript frontend
 ├── backend/         # Node.js + Express backend
-├── screenshots/     # All project screenshots and visual assets
+├── Screenshots/     # All project screenshots and visual assets
 ├── README.md
 └── package.json
 ```
