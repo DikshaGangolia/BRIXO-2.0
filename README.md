@@ -34,7 +34,6 @@ It combines visual website building with authentication, project management, pub
 ## 🖼️ Project Screenshots
 
 BRIXO 2.0 includes a collection of **8 workflow screenshots** covering the main user journey:
-
 1. **Dashboard** — Browse starter templates and manage website projects.
 2. **Subscription Plans** — Compare BRIXO tiers and upgrade options.
 3. **Razorpay Payment Options** — Online payment interface.
