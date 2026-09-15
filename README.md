@@ -3,6 +3,7 @@
 # 🚀 BRIXO 2.0
 
 ### Build. Customize. Preview. Publish.
+
 **A full-stack visual web builder for creating and publishing modern websites through a simple, intuitive interface.**
 
 ⭐ If you find BRIXO useful, consider giving the repository a star!
