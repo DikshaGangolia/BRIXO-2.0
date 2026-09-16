@@ -49,18 +49,21 @@ BRIXO 2.0 includes a collection of **8 workflow screenshots** covering the main 
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - React
 - TypeScript
 - Vite
 - Zustand
 
 ### Backend
+
 - Node.js
 - Express.js
 - MongoDB
 - JWT Authentication
 
 ### Deployment
+
 - Vercel
 - Render
 
