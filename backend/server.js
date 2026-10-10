@@ -22,6 +22,7 @@ const allowedOrigins = [
   "http://localhost:5175",
   "http://localhost:3000",
   "https://brixo-builder.vercel.app",
+  "https://dikshagangolia.github.io",
   "https://brixo-2-0.onrender.com"
 ];
 
