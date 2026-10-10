@@ -1,5 +1,7 @@
-const express = require("express");
 const dotenv = require("dotenv");
+dotenv.config();
+
+const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
@@ -9,11 +11,8 @@ const orderRoutes = require("./routes/orderRoutes");
 const twilioRoutes = require("./routes/twilioRoutes");
 const emailRoutes = require("./routes/emailRoutes");
 const developerRoutes = require("./routes/developerRoutes");
+const verificationRoutes = require("./routes/verificationRoutes");
 const auth = require("./middleware/authMiddleware");
-
-dotenv.config();
-
-connectDB();
 
 const app = express();
 
@@ -28,7 +27,7 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || origin.startsWith("http://localhost:") || allowedOrigins.includes(origin)) {
+    if (!origin || origin === "null" || origin.startsWith("http://localhost:") || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -46,6 +45,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/verification", verificationRoutes);
 app.use("/api/twilio", twilioRoutes);
 app.use("/api/email", emailRoutes);
 app.use("/api/developer", developerRoutes);
@@ -62,6 +62,11 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
+startServer();

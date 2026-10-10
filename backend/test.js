@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
-mongoose.connect("mongodb+srv://diksha2710:YOUR_PASSWORD@cluster0.msbg2mw.mongodb.net/brixodb?retryWrites=true&w=majority&appName=Cluster0")
+require("dotenv").config();
+mongoose.connect(process.env.MONGO_URI);
 .then(() => {
     console.log(" Connected");
     process.exit(0);

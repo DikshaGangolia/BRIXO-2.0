@@ -12,7 +12,8 @@ import {
   Tablet, 
   Smartphone,
   CheckCircle,
-  ShoppingBag
+  ShoppingBag,
+  Loader2
 } from 'lucide-react';
 import { useBuilderStore } from '../../store/useBuilderStore';
 
@@ -37,11 +38,24 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenPreview, onOpenPublish, on
   } = useBuilderStore();
   const navigate = useNavigate();
   const [saveIndicator, setSaveIndicator] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    saveActiveProject();
-    setSaveIndicator(true);
-    setTimeout(() => setSaveIndicator(false), 2000);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const saved = await saveActiveProject();
+      if (saved) {
+        setSaveIndicator(true);
+        setTimeout(() => setSaveIndicator(false), 2500);
+      } else {
+        alert("Unable to save to MongoDB. Please ensure you are logged in.");
+      }
+    } catch (err: any) {
+      console.error("Save failed:", err);
+      alert("Error saving project to MongoDB: " + (err.message || "Unknown error"));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -134,10 +148,18 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenPreview, onOpenPublish, on
         {/* Save */}
         <button 
           onClick={handleSave}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-850 hover:bg-slate-800 text-3xs font-bold uppercase rounded-lg transition-all active:scale-95 border border-slate-800"
+          disabled={isSaving}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-850 hover:bg-slate-800 text-3xs font-bold uppercase rounded-lg transition-all active:scale-95 border border-slate-800 disabled:opacity-50"
+          title="Save project changes to MongoDB cloud"
         >
-          {saveIndicator ? <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> : <Save className="w-3.5 h-3.5" />}
-          {saveIndicator ? 'Saved' : 'Save'}
+          {isSaving ? (
+            <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin" />
+          ) : saveIndicator ? (
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+          ) : (
+            <Save className="w-3.5 h-3.5" />
+          )}
+          {isSaving ? 'Saving...' : saveIndicator ? 'Saved' : 'Save'}
         </button>
 
         {/* Preview */}

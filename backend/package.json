@@ -20,6 +20,7 @@
     "express": "^5.2.1",
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
+    "mongodb-memory-server": "^11.3.0",
     "mongoose": "^8.15.1",
     "morgan": "^1.11.0",
     "nodemailer": "^9.0.3",

@@ -10,3 +10,11 @@ node_modules/
 # OS files
 .DS_Store
 Thumbs.db
+# Local database and sensitive files
+data/db/
+data/db/**
+.env.*
+*.pem
+*.key
+credentials.json
+secrets.json

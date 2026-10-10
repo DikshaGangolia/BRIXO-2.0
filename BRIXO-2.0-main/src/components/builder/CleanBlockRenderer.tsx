@@ -3,21 +3,40 @@ import * as Lucide from "lucide-react";
 import type { ComponentBlock, DesignTokens } from "../../types/builder";
 import { useCartStore } from "../../store/useCartStore";
 import { useParams } from "react-router-dom";
+const DEFAULT_TOKENS: DesignTokens = {
+  primaryColor: '#3b82f6',
+  secondaryColor: '#1d4ed8',
+  accentColor: '#f59e0b',
+  backgroundColor: '#ffffff',
+  textColor: '#0f172a',
+  fontFamily: 'font-sans',
+  borderRadius: 'rounded-xl',
+  boxShadow: 'shadow-md',
+  glassmorphism: false,
+  paddingTop: 'py-16',
+  paddingBottom: 'py-16',
+  marginTop: 'my-0',
+  marginBottom: 'my-0'
+};
+
 export const CleanBlockRenderer = ({
-      comp,
-      tokens,
-      onNavigate,
-      pages
-    }: {
-      comp: ComponentBlock;
-      tokens: DesignTokens;
-      onNavigate: (id: string) => void;
-      pages: any[];
-    }) => {
-      const rounded = tokens.borderRadius;
-      const shadow = tokens.boxShadow;
-      const pyTop = comp.styles?.paddingTop || tokens.paddingTop;
-      const pyBottom = comp.styles?.paddingBottom || tokens.paddingBottom;
+  comp,
+  tokens,
+  onNavigate,
+  pages = []
+}: {
+  comp: ComponentBlock;
+  tokens?: DesignTokens;
+  onNavigate?: (id: string) => void;
+  pages?: any[];
+}) => {
+  const safeTokens = { ...DEFAULT_TOKENS, ...(tokens || {}) };
+  const rounded = safeTokens.borderRadius || 'rounded-xl';
+  const shadow = safeTokens.boxShadow || 'shadow-md';
+  const pyTop = comp.styles?.paddingTop || safeTokens.paddingTop || 'py-16';
+  const pyBottom = comp.styles?.paddingBottom || safeTokens.paddingBottom || 'py-16';
+  const safeNavigate = onNavigate || (() => {});
+  tokens = safeTokens;
 
       if (comp.customCode?.html) {
         return (

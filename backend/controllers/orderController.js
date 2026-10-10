@@ -67,6 +67,16 @@ exports.placeCodOrder = async (req, res) => {
       });
     }
 
+    if (customerPhone) {
+      const { isCustomerVerified } = require("./verificationController");
+      if (!isCustomerVerified(customerEmail, customerPhone, req.body.verificationToken)) {
+        return res.status(400).json({
+          success: false,
+          message: "Customer mobile number must be verified before placing order.",
+        });
+      }
+    }
+
     // 1. Find project owner to save User ID
     let projectOwner = null;
     try {
@@ -108,12 +118,13 @@ exports.placeCodOrder = async (req, res) => {
           process.env.TWILIO_AUTH_TOKEN
         );
 
+        const { formatE164Phone } = require("./verificationController");
         // SMS to Customer
         const customerMsg = `Thank you for your order.\n\nOrder ID: ${generatedOrderId}\nPayment Method: Cash on Delivery\nAmount: ₹${parseFloat(totalAmount).toFixed(2)}\n\nYour order has been confirmed and will be delivered soon.`;
         await client.messages.create({
           body: customerMsg,
           from: process.env.TWILIO_PHONE_NUMBER,
-          to: customerPhone,
+          to: formatE164Phone(customerPhone),
         });
 
         // SMS to Shopkeeper
@@ -122,13 +133,32 @@ exports.placeCodOrder = async (req, res) => {
         await client.messages.create({
           body: shopkeeperMsg,
           from: process.env.TWILIO_PHONE_NUMBER,
-          to: shopkeeperPhone,
+          to: formatE164Phone(shopkeeperPhone),
         });
 
         smsSent = true;
       }
     } catch (smsErr) {
       console.error("Twilio SMS dispatch failed for COD (ignored, order saved):", smsErr.message);
+    }
+
+    // 5. Send Email confirmation if email configured
+    if (customerEmail) {
+      try {
+        const sendEmail = require("../utils/sendEmail");
+        const itemNames = (items || []).map(i => i.name).join(", ");
+        await sendEmail({
+          name: customerName,
+          email: customerEmail,
+          phone: customerPhone,
+          address: req.body.address || "Standard Delivery",
+          productName: itemNames || "Order Items",
+          orderId: generatedOrderId,
+          total: parseFloat(totalAmount).toFixed(2),
+        });
+      } catch (emailErr) {
+        console.error("Email confirmation dispatch skipped/failed:", emailErr.message);
+      }
     }
 
     res.status(201).json({

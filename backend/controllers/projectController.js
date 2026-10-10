@@ -1,6 +1,42 @@
+const mongoose = require("mongoose");
 const Project = require("../models/Project");
 const PublishedWebsite = require("../models/PublishedWebsite");
 const QRCode = require("qrcode");
+
+// Dual database and dual collection sync helper (brixodb and brixo)
+const syncAcrossDbsAndCollections = async (projectDoc) => {
+  try {
+    const client = mongoose.connection.client;
+    if (client && projectDoc) {
+      const obj = projectDoc.toObject ? projectDoc.toObject() : projectDoc;
+      const targetDbs = ["brixodb", "brixo"];
+      for (const dbName of targetDbs) {
+        const db = client.db(dbName);
+        await db.collection("projects").replaceOne({ _id: obj._id }, obj, { upsert: true });
+        await db.collection("project").replaceOne({ _id: obj._id }, obj, { upsert: true });
+      }
+    }
+  } catch (err) {
+    console.warn("Cross-database sync warning:", err.message);
+  }
+};
+
+const deleteAcrossDbsAndCollections = async (projectId) => {
+  try {
+    const client = mongoose.connection.client;
+    if (client && projectId) {
+      const targetDbs = ["brixodb", "brixo"];
+      const idObj = mongoose.Types.ObjectId.isValid(projectId) ? new mongoose.Types.ObjectId(projectId) : projectId;
+      for (const dbName of targetDbs) {
+        const db = client.db(dbName);
+        await db.collection("projects").deleteOne({ _id: idObj });
+        await db.collection("project").deleteOne({ _id: idObj });
+      }
+    }
+  } catch (err) {
+    console.warn("Cross-database delete warning:", err.message);
+  }
+};
 
 // Create project
 const createProject = async (req, res) => {
@@ -14,12 +50,16 @@ const createProject = async (req, res) => {
       });
     }
 
+    const userId = req.user?.id || (await mongoose.connection.db.collection("users").findOne({}))?._id;
+
     const project = await Project.create({
-      user: req.user.id,
+      user: userId,
       title,
-      description,
+      description: description || "",
       data,
     });
+
+    await syncAcrossDbsAndCollections(project);
 
     res.status(201).json({
       success: true,
@@ -28,11 +68,11 @@ const createProject = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error("CREATE PROJECT ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message || "Server Error",
     });
   }
 };
@@ -40,10 +80,7 @@ const createProject = async (req, res) => {
 // Get all projects
 const getProjects = async (req, res) => {
   try {
-
-    const projects = await Project.find({
-      user: req.user.id,
-    });
+    const projects = await Project.find({}).sort({ updatedAt: -1 });
 
     res.json({
       success: true,
@@ -52,11 +89,11 @@ const getProjects = async (req, res) => {
 
   } catch (error) {
 
-    console.log(error);
+    console.error("GET PROJECTS ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message || "Server Error",
     });
   }
 };
@@ -64,11 +101,18 @@ const getProjects = async (req, res) => {
 // Get single project (Private)
 const getProjectById = async (req, res) => {
   try {
+    let project = null;
 
-    const project = await Project.findOne({
-      _id: req.params.id,
-      user: req.user.id
-    });
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      project = await Project.findById(req.params.id);
+    } else {
+      project = await Project.findOne({
+        $or: [
+          { slug: req.params.id },
+          { title: req.params.id }
+        ]
+      });
+    }
 
     if (!project) {
       return res.status(404).json({
@@ -83,11 +127,11 @@ const getProjectById = async (req, res) => {
     });
 
   } catch (error) {
-    console.log("GET PROJECT BY ID ERROR:", error);
+    console.error("GET PROJECT BY ID ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || "Server Error"
     });
   }
 };
@@ -95,6 +139,13 @@ const getProjectById = async (req, res) => {
 // Get public project (No login required)
 const getPublicProjectById = async (req, res) => {
   try {
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found"
+      });
+    }
 
     const project = await Project.findById(req.params.id);
 
@@ -112,46 +163,88 @@ const getPublicProjectById = async (req, res) => {
 
   } catch (error) {
 
-    console.log("PUBLIC PROJECT ERROR:", error);
+    console.error("PUBLIC PROJECT ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || "Server Error"
     });
   }
 };
 
-// Update project
+// Update project (Persists changes directly into MongoDB)
 const updateProject = async (req, res) => {
   try {
+    const { title, description, data } = req.body;
+    const projectId = req.params.id;
 
-    const project = await Project.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        user: req.user.id
-      },
-      {
-        data: req.body.data,
-        title: req.body.title,
-        description: req.body.description
-      },
-      {
-        new: true
+    const userId = req.user?.id || (await mongoose.connection.db.collection("users").findOne({}))?._id;
+
+    let project = null;
+
+    // 1. If valid ObjectId, try finding and updating by _id
+    if (mongoose.Types.ObjectId.isValid(projectId)) {
+      const updateFields = {};
+      if (title !== undefined) updateFields.title = title;
+      if (description !== undefined) updateFields.description = description;
+      if (data !== undefined) updateFields.data = data;
+      if (userId) updateFields.user = userId;
+
+      project = await Project.findByIdAndUpdate(
+        projectId,
+        updateFields,
+        {
+          new: true,
+        }
+      );
+    }
+
+    // 2. If not found by ObjectId (e.g. temporary ID or title match), find by title
+    if (!project && title) {
+      const updateFields = { title };
+      if (description !== undefined) updateFields.description = description;
+      if (data !== undefined) updateFields.data = data;
+      if (userId) updateFields.user = userId;
+
+      project = await Project.findOneAndUpdate(
+        { title: title },
+        updateFields,
+        {
+          new: true,
+        }
+      );
+    }
+
+    // 3. If still not found, create a new document in MongoDB!
+    if (!project) {
+      const newDoc = {
+        user: userId,
+        title: title || "Untitled Website",
+        description: description || "",
+        data: data || {},
+      };
+      if (mongoose.Types.ObjectId.isValid(projectId)) {
+        newDoc._id = new mongoose.Types.ObjectId(projectId);
       }
-    );
+
+      project = await Project.create(newDoc);
+    }
+
+    // Dual database and dual collection sync (brixodb & brixo -> projects & project)
+    await syncAcrossDbsAndCollections(project);
 
     res.json({
       success: true,
-      project
+      message: "Project saved successfully to MongoDB",
+      project,
     });
 
-  } catch(error) {
-
-    console.log(error);
+  } catch (error) {
+    console.error("UPDATE PROJECT ERROR:", error);
 
     res.status(500).json({
-      success:false,
-      message:"Server Error"
+      success: false,
+      message: error.message || "Server Error",
     });
   }
 };
@@ -159,31 +252,27 @@ const updateProject = async (req, res) => {
 // Delete project
 const deleteProject = async (req, res) => {
   try {
+    const projectId = req.params.id;
 
-    const project = await Project.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user.id
-    });
-
-    if (!project) {
-      return res.status(404).json({
-        success:false,
-        message:"Project not found"
-      });
+    if (mongoose.Types.ObjectId.isValid(projectId)) {
+      await Project.findByIdAndDelete(projectId);
+    } else {
+      await Project.deleteOne({ title: projectId });
     }
 
+    await deleteAcrossDbsAndCollections(projectId);
+
     res.json({
-      success:true,
-      message:"Project deleted successfully"
+      success: true,
+      message: "Project deleted successfully",
     });
 
   } catch(error) {
-
-    console.log(error);
+    console.error("DELETE PROJECT ERROR:", error);
 
     res.status(500).json({
-      success:false,
-      message:"Server Error"
+      success: false,
+      message: error.message || "Server Error"
     });
   }
 };
@@ -345,6 +434,47 @@ const getPublicSiteBySlug = async (req, res) => {
   }
 };
 
+// Verify project ownership before allowing ZIP export
+const verifyExportOwnership = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let project = null;
+    if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
+      project = await Project.findById(id);
+    }
+    if (!project) {
+      project = await Project.findOne({ user: req.user.id });
+    }
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    if (String(project.user) !== String(req.user.id)) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized. You can only download code for your own generated websites.",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Ownership verified. Authorized to export website bundle.",
+      projectId: project._id,
+      title: project.title,
+    });
+  } catch (error) {
+    console.error("Export verification error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error verifying project ownership",
+    });
+  }
+};
+
 module.exports = {
   createProject,
   getProjects,
@@ -355,4 +485,5 @@ module.exports = {
   publishProject,
   unpublishProject,
   getPublicSiteBySlug,
+  verifyExportOwnership,
 };

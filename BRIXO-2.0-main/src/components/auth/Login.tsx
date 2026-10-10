@@ -5,8 +5,8 @@ import { Mail, Lock, Sparkles, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 
 export const Login: React.FC = () => {
-  const [email, setEmail] = useState('user@example.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const login = useAuthStore(state => state.login);
@@ -17,16 +17,13 @@ export const Login: React.FC = () => {
     setError('');
     setIsLoading(true);
 
-    // Simulate small latency for premium auth experience
-    await new Promise(r => setTimeout(r, 600));
-
     const res = await login(email, password);
     setIsLoading(false);
 
     if (res.success) {
       navigate('/dashboard');
     } else {
-      setError(res.message || 'Invalid email or password. Hint: Signup a new account or try user@example.com / password123');
+      setError(res.message || 'Invalid email/username or password.');
     }
   };
 

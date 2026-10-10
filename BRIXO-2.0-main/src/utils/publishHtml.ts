@@ -1,6 +1,6 @@
 import type { WebsiteProject, WebPage, ComponentBlock, DesignTokens } from '../types/builder';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://brixo-2-0.onrender.com';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // Escape helper for text going into HTML
 const esc = (s: any): string =>
@@ -87,16 +87,16 @@ const renderComponent = (comp: ComponentBlock, tokens: DesignTokens): string => 
       const items: any[] = (f.items as any[]) || [];
       const links = items.map((it) => {
         const label = typeof it === 'string' ? it : (it?.title || it?.name || 'Link');
-        return `<li><a href="#" class="hover:opacity-80 text-sm font-semibold" style="color:${text}">${esc(label)}</a></li>`;
+        return `<li><a href="#" onclick="event.preventDefault(); window.__brixoNavigate('${jsEsc(label)}')" class="hover:opacity-80 text-sm font-semibold cursor-pointer" style="color:${text}">${esc(label)}</a></li>`;
       }).join('');
       return `
 <nav class="sticky top-0 z-40 border-b backdrop-blur" style="background:${bg}dd;border-color:${primary}20;">
   <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-    <div class="flex items-center gap-2 font-extrabold" style="color:${primary}">
+    <div class="flex items-center gap-2 font-extrabold cursor-pointer" onclick="window.__brixoNavigate('Home')" style="color:${primary}">
       <span>${title}</span>
     </div>
     <ul class="hidden md:flex items-center gap-6">${links}</ul>
-    <button class="relative p-2 rounded-full hover:bg-black/5" onclick="window.__brixoOpenCart()" style="color:${primary}" aria-label="Open cart">
+    <button class="relative p-2 rounded-full hover:bg-black/5 cursor-pointer" onclick="window.__brixoOpenCart()" style="color:${primary}" aria-label="Open cart">
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 10a4 4 0 0 1-8 0"/></svg>
       <span id="brixo-cart-badge" class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center text-white" style="background:${accent};display:none">0</span>
     </button>
@@ -110,12 +110,12 @@ const renderComponent = (comp: ComponentBlock, tokens: DesignTokens): string => 
       const cta = esc(f.ctaText || 'Get Started');
       const img = esc(f.imageUrl || 'https://images.unsplash.com/photo-1522199755839-a2bacb67c546?auto=format&fit=crop&w=1200&q=80');
       return `
-<section style="padding:${pt} 24px ${pb} 24px;background:linear-gradient(135deg, ${bg}, ${primary}10);color:${text}">
+<section id="hero" data-block-type="Hero" style="padding:${pt} 24px ${pb} 24px;background:linear-gradient(135deg, ${bg}, ${primary}10);color:${text}">
   <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
     <div>
       <h1 class="text-4xl md:text-5xl font-black leading-tight mb-4" style="color:${primary}">${title}</h1>
       <p class="text-base md:text-lg opacity-90 mb-6 leading-relaxed">${subtitle}</p>
-      <a href="#contact" class="inline-block px-6 py-3 font-bold text-white shadow-lg" style="background:${primary};border-radius:${radius}">${cta}</a>
+      <button type="button" onclick="window.__brixoHeroAction()" class="inline-block px-6 py-3 font-bold text-white shadow-lg cursor-pointer transition hover:opacity-95" style="background:${primary};border-radius:${radius}">${cta}</button>
     </div>
     <div class="w-full aspect-video overflow-hidden shadow-xl" style="border-radius:${radius};box-shadow:${shadow}">
       <img src="${img}" alt="Hero" class="w-full h-full object-cover"/>
@@ -136,7 +136,7 @@ const renderComponent = (comp: ComponentBlock, tokens: DesignTokens): string => 
           <p class="text-sm opacity-80 leading-relaxed">${esc(it.desc || it.description || '')}</p>
         </div>`).join('');
       return `
-<section style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
+<section id="services" data-block-type="Services" style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
   <div class="max-w-6xl mx-auto">
     <h2 class="text-3xl font-black text-center mb-10" style="color:${primary}">${title}</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">${items}</div>
@@ -176,7 +176,7 @@ const renderComponent = (comp: ComponentBlock, tokens: DesignTokens): string => 
         </div>`;
       }).join('');
       return `
-<section style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
+<section id="products" data-block-type="Products" style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
   <div class="max-w-6xl mx-auto">
     <h2 class="text-3xl font-black text-center mb-10" style="color:${primary}">${title}</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">${items}</div>
@@ -195,7 +195,7 @@ const renderComponent = (comp: ComponentBlock, tokens: DesignTokens): string => 
           </div>
         </div>`).join('');
       return `
-<section style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
+<section id="testimonials" data-block-type="Testimonials" style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
   <div class="max-w-6xl mx-auto">
     <h2 class="text-3xl font-black text-center mb-10" style="color:${primary}">${title}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">${items}</div>
@@ -222,7 +222,7 @@ const renderComponent = (comp: ComponentBlock, tokens: DesignTokens): string => 
         </div>`;
       }).join('');
       return `
-<section style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
+<section id="pricing" data-block-type="Pricing" style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
   <div class="max-w-6xl mx-auto">
     <h2 class="text-3xl font-black text-center mb-10" style="color:${primary}">${title}</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">${items}</div>
@@ -234,14 +234,14 @@ const renderComponent = (comp: ComponentBlock, tokens: DesignTokens): string => 
       const title = esc(f.title || 'Contact Us');
       const cta = esc(f.ctaText || 'Send Message');
       return `
-<section id="contact" style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
+<section id="contact" data-block-type="ContactForm" style="padding:${pt} 24px ${pb} 24px;background:${bg};color:${text}">
   <div class="max-w-lg mx-auto p-6 border" style="border-color:${primary}20;border-radius:${radius};box-shadow:${shadow}">
     <h2 class="text-2xl font-bold text-center mb-6" style="color:${primary}">${title}</h2>
     <form onsubmit="event.preventDefault(); window.__brixoNotify('Message sent successfully! We will get back to you soon.'); this.reset();" class="space-y-4">
       <input required type="text" placeholder="Full Name" class="w-full px-4 py-3 border outline-none" style="border-color:${primary}30;background:${bg};color:${text};border-radius:${radius}"/>
       <input required type="email" placeholder="Email" class="w-full px-4 py-3 border outline-none" style="border-color:${primary}30;background:${bg};color:${text};border-radius:${radius}"/>
       <textarea required placeholder="Message" rows="4" class="w-full px-4 py-3 border outline-none" style="border-color:${primary}30;background:${bg};color:${text};border-radius:${radius}"></textarea>
-      <button type="submit" class="w-full py-3 font-bold text-white" style="background:${primary};border-radius:${radius}">${cta}</button>
+      <button type="submit" class="w-full py-3 font-bold text-white cursor-pointer" style="background:${primary};border-radius:${radius}">${cta}</button>
     </form>
   </div>
 </section>`;
@@ -250,7 +250,7 @@ const renderComponent = (comp: ComponentBlock, tokens: DesignTokens): string => 
     case 'Footer': {
       const items = ((f.items as any[]) || []).map((s) => {
         const label = typeof s === 'string' ? s : (s?.title || s?.name || 'Link');
-        return `<a href="#" class="hover:opacity-80 text-sm">${esc(label)}</a>`;
+        return `<a href="#" onclick="event.preventDefault(); window.__brixoNavigate('${jsEsc(label)}')" class="hover:opacity-80 text-sm cursor-pointer">${esc(label)}</a>`;
       }).join('');
       return `
 <footer class="border-t py-10 px-6 text-center" style="border-color:${primary}15;background:${bg};color:${text}">
@@ -271,13 +271,26 @@ const renderPage = (page: WebPage, tokens: DesignTokens): string => {
 };
 
 export const generatePublishedHTML = (project: WebsiteProject): string => {
-  const tokens = project.config.designTokens;
-  const pages = project.config.pages || [];
-  const primary = tokens.primaryColor;
-  const accent = tokens.accentColor;
-  const bg = tokens.backgroundColor;
-  const text = tokens.textColor;
-  const radius = radiusToPx(tokens.borderRadius);
+  const DEFAULT_TOKENS: DesignTokens = {
+    primaryColor: '#2563eb',
+    secondaryColor: '#64748b',
+    accentColor: '#3b82f6',
+    backgroundColor: '#ffffff',
+    textColor: '#0f172a',
+    fontFamily: 'font-sans',
+    borderRadius: 'rounded-xl',
+    boxShadow: 'shadow-md',
+    paddingTop: 16,
+    paddingBottom: 16,
+  };
+  const config = project.config || (project as any).data?.config || (project as any).data || {};
+  const tokens = { ...DEFAULT_TOKENS, ...(config.designTokens || {}) };
+  const pages = config.pages || [];
+  const primary = tokens.primaryColor || '#2563eb';
+  const accent = tokens.accentColor || '#3b82f6';
+  const bg = tokens.backgroundColor || '#ffffff';
+  const text = tokens.textColor || '#0f172a';
+  const radius = radiusToPx(tokens.borderRadius || 'rounded-xl');
 
   // Multi-page: single doc with tabs at top switching visible page
   const pageNav = pages.length > 1
@@ -349,39 +362,90 @@ ${pageNav}
   <div style="background:#0f172a;color:#e2e8f0;border-radius:${radius};max-width:520px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.6)">
     <header style="padding:20px 24px;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between">
       <div>
-        <div style="font-weight:800;font-size:18px">Checkout</div>
+        <div id="brixo-co-title" style="font-weight:800;font-size:18px">Checkout</div>
         <div id="brixo-checkout-total" style="font-size:12px;opacity:.7;margin-top:2px">Total ₹0.00</div>
       </div>
       <button onclick="window.__brixoCloseCheckout()" aria-label="Close" style="background:transparent;border:0;color:#94a3b8;cursor:pointer;font-size:24px;line-height:1">×</button>
     </header>
-    <div style="padding:24px">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:10px">Contact</div>
-      <input id="brixo-co-email" type="email" placeholder="Email address" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:14px;font-size:14px;box-sizing:border-box" />
-      <input
-  id="brixo-co-phone"
-  type="tel"
-  placeholder="Phone Number"
-  style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:12px;font-size:14px;box-sizing:border-box"
-/>
-      <input id="brixo-co-name" type="text" placeholder="Full name" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:14px;font-size:14px;box-sizing:border-box" />
-      <input id="brixo-co-address" type="text" placeholder="Shipping address" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:20px;font-size:14px;box-sizing:border-box" />
 
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:10px">Payment Method</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-        <label id="brixo-opt-online" class="brixo-pay-opt" style="display:flex;align-items:center;gap:8px;padding:12px;background:#1e293b;border:2px solid ${primary};border-radius:${radius};cursor:pointer" onclick="window.__brixoSetMethod('RAZORPAY')">
-          <input type="radio" name="brixo-co-method" value="RAZORPAY" checked style="accent-color:${primary}" />
-          <span style="font-weight:700;font-size:12px">Pay Online</span>
-        </label>
-        <label id="brixo-opt-cod" class="brixo-pay-opt" style="display:flex;align-items:center;gap:8px;padding:12px;background:#1e293b;border:2px solid #334155;border-radius:${radius};cursor:pointer" onclick="window.__brixoSetMethod('COD')">
-          <input type="radio" name="brixo-co-method" value="COD" style="accent-color:${primary}" />
-          <span style="font-weight:700;font-size:12px">Cash on Delivery</span>
-        </label>
+    <div style="padding:24px">
+      <!-- STEP 1: CUSTOMER DETAILS -->
+      <div id="brixo-step-1">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:12px">Step 1 of 3: Customer Information</div>
+        <input id="brixo-co-name" type="text" placeholder="Full name *" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:12px;font-size:14px;box-sizing:border-box" />
+        <input id="brixo-co-phone" type="tel" placeholder="Mobile phone number *" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:12px;font-size:14px;box-sizing:border-box" />
+        <input id="brixo-co-email" type="email" placeholder="Email address *" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:12px;font-size:14px;box-sizing:border-box" />
+        <input id="brixo-co-address" type="text" placeholder="Shipping delivery address *" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:20px;font-size:14px;box-sizing:border-box" />
+
+        <button id="brixo-btn-step1" onclick="window.__brixoSendVerification()" style="width:100%;padding:14px;background:${primary};color:#fff;border:0;border-radius:${radius};font-weight:800;font-size:14px;cursor:pointer">
+          Verify Mobile Number & Continue →
+        </button>
       </div>
 
-      <button id="brixo-pay-btn" onclick="window.__brixoPay()" style="width:100%;padding:14px;background:${primary};color:#fff;border:0;border-radius:${radius};font-weight:800;font-size:14px;cursor:pointer">
-        Pay with Razorpay
-      </button>
-      <p style="text-align:center;font-size:11px;opacity:.5;margin:12px 0 0">🔒 checkout — payment is processed</p>
+      <!-- STEP 2: VERIFICATION OTP -->
+      <div id="brixo-step-2" style="display:none">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:8px">Step 2 of 3: Verification Required</div>
+        <p style="font-size:13px;opacity:.8;margin:0 0 16px;line-height:1.5">Enter the 6-digit verification code sent to your mobile number.</p>
+        
+        <div id="brixo-dev-hint" style="display:none;background:#1e293b;border:1px solid #3b82f6;border-radius:${radius};padding:10px 14px;margin-bottom:14px;font-size:12px;color:#93c5fd;line-height:1.4"></div>
+
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">Mobile SMS Verification Code</label>
+        <input id="brixo-co-phone-code" type="text" maxlength="6" placeholder="6-digit mobile OTP" style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:${radius};margin-bottom:20px;font-size:16px;letter-spacing:2px;box-sizing:border-box" />
+
+        <div style="display:flex;gap:10px">
+          <button onclick="window.__brixoShowStep(1)" style="flex:1;padding:12px;background:#334155;color:#fff;border:0;border-radius:${radius};font-weight:700;font-size:13px;cursor:pointer">
+            ← Back
+          </button>
+          <button id="brixo-btn-step2" onclick="window.__brixoConfirmVerification()" style="flex:2;padding:12px;background:${primary};color:#fff;border:0;border-radius:${radius};font-weight:800;font-size:13px;cursor:pointer">
+            Verify Code & Proceed →
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: PAYMENT METHOD -->
+      <div id="brixo-step-3" style="display:none">
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);border-radius:${radius};margin-bottom:16px">
+          <span style="color:#10b981;font-weight:bold">✓</span>
+          <span id="brixo-verified-badge" style="font-size:12px;font-weight:700;color:#10b981">Customer Verified</span>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:10px">Step 3 of 3: Select Payment Option</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+          <label id="brixo-opt-online" class="brixo-pay-opt" style="display:flex;align-items:center;gap:8px;padding:12px;background:#1e293b;border:2px solid ${primary};border-radius:${radius};cursor:pointer" onclick="window.__brixoSetMethod('RAZORPAY')">
+            <input type="radio" name="brixo-co-method" value="RAZORPAY" checked style="accent-color:${primary}" />
+            <span style="font-weight:700;font-size:12px">Pay Online</span>
+          </label>
+          <label id="brixo-opt-cod" class="brixo-pay-opt" style="display:flex;align-items:center;gap:8px;padding:12px;background:#1e293b;border:2px solid #334155;border-radius:${radius};cursor:pointer" onclick="window.__brixoSetMethod('COD')">
+            <input type="radio" name="brixo-co-method" value="COD" style="accent-color:${primary}" />
+            <span style="font-weight:700;font-size:12px">Cash on Delivery</span>
+          </label>
+        </div>
+
+        <button id="brixo-pay-btn" onclick="window.__brixoPay()" style="width:100%;padding:14px;background:${primary};color:#fff;border:0;border-radius:${radius};font-weight:800;font-size:14px;cursor:pointer">
+          Pay with Razorpay
+        </button>
+      </div>
+
+      <!-- STEP 4: ORDER CONFIRMATION -->
+      <div id="brixo-step-4" style="display:none;text-align:center;padding:12px 0">
+        <div style="width:56px;height:56px;background:rgba(16,185,129,0.2);border:2px solid #10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:#10b981">✓</div>
+        <h3 style="font-weight:800;font-size:20px;margin:0 0 8px">Order Confirmed!</h3>
+        <p style="font-size:13px;opacity:.7;margin:0 0 20px">Thank you for your purchase. Your order has been placed successfully.</p>
+        
+        <div style="background:#1e293b;border-radius:${radius};padding:16px;text-align:left;margin-bottom:20px;font-size:13px;line-height:1.8">
+          <div><strong>Order ID:</strong> <span id="brixo-conf-id" style="color:${accent}">ORD-123456</span></div>
+          <div><strong>Customer:</strong> <span id="brixo-conf-name">Name</span></div>
+          <div><strong>Total Amount:</strong> <span id="brixo-conf-amount">₹0.00</span></div>
+          <div><strong>Payment Method:</strong> <span id="brixo-conf-method">Online</span></div>
+          <div><strong>Status:</strong> <span id="brixo-conf-status" style="color:#10b981">PAID</span></div>
+        </div>
+
+        <button onclick="window.__brixoCloseCheckout()" style="width:100%;padding:12px;background:${primary};color:#fff;border:0;border-radius:${radius};font-weight:800;font-size:14px;cursor:pointer">
+          Continue Shopping
+        </button>
+      </div>
+
+      <p style="text-align:center;font-size:11px;opacity:.5;margin:16px 0 0">🔒 Verified checkout • Secure payment processing</p>
     </div>
   </div>
 </div>
@@ -389,7 +453,7 @@ ${pageNav}
 <script>
 (function(){
   var STORAGE_KEY = 'brixo_cart_${jsEsc(project.id)}';
-  var state = { items: [] };
+  var state = { items: [], verificationToken: null, customer: {} };
   try { state.items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') || []; } catch(e) {}
 
   function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items)); } catch(e) {} }
@@ -438,8 +502,8 @@ ${pageNav}
       }).join('');
       footer.style.display = 'block';
     }
-    countEl.textContent = count() + ' item' + (count() === 1 ? '' : 's');
-    subEl.textContent = '₹' + total().toFixed(2);
+    if (countEl) countEl.textContent = count() + ' item' + (count() === 1 ? '' : 's');
+    if (subEl) subEl.textContent = '₹' + total().toFixed(2);
     renderBadge();
   }
 
@@ -453,7 +517,7 @@ ${pageNav}
     t.textContent = msg;
     t.classList.add('show');
     clearTimeout(window.__brixoToastT);
-    window.__brixoToastT = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+    window.__brixoToastT = setTimeout(function(){ t.classList.remove('show'); }, 2200);
   }
 
   window.__brixoAddToCart = function(item){
@@ -467,23 +531,164 @@ ${pageNav}
   };
 
   window.__brixoOpenCart = function(){
-    document.getElementById('brixo-drawer').classList.remove('closed');
-    document.getElementById('brixo-backdrop').classList.remove('hidden');
+    var d = document.getElementById('brixo-drawer');
+    var b = document.getElementById('brixo-backdrop');
+    if (d) d.classList.remove('closed');
+    if (b) b.classList.remove('hidden');
     renderItems();
   };
   window.__brixoCloseCart = function(){
-    document.getElementById('brixo-drawer').classList.add('closed');
-    document.getElementById('brixo-backdrop').classList.add('hidden');
+    var d = document.getElementById('brixo-drawer');
+    var b = document.getElementById('brixo-backdrop');
+    if (d) d.classList.add('closed');
+    if (b) b.classList.add('hidden');
+  };
+
+  window.__brixoShowStep = function(step){
+    for (var i = 1; i <= 4; i++) {
+      var s = document.getElementById('brixo-step-' + i);
+      if (s) s.style.display = (i === step) ? 'block' : 'none';
+    }
+    var title = document.getElementById('brixo-co-title');
+    if (title) {
+      if (step === 1) title.textContent = 'Step 1: Contact Details';
+      else if (step === 2) title.textContent = 'Step 2: Verification';
+      else if (step === 3) title.textContent = 'Step 3: Payment';
+      else if (step === 4) title.textContent = 'Order Confirmation';
+    }
   };
 
   window.__brixoCheckout = function(){
     if (state.items.length === 0) return;
     window.__brixoCloseCart();
     var modal = document.getElementById('brixo-checkout-backdrop');
-    var modal = document.getElementById('brixo-checkout-backdrop');
-    document.getElementById('brixo-checkout-total').textContent = 'Total ₹' + total().toFixed(2) + ' • ' + count() + ' item' + (count()===1?'':'s');
-    modal.style.display = 'flex';
+    var tot = document.getElementById('brixo-checkout-total');
+    if (tot) tot.textContent = 'Total ₹' + total().toFixed(2) + ' • ' + count() + ' item' + (count()===1?'':'s');
+    if (state.verificationToken) {
+      window.__brixoShowStep(3);
+    } else {
+      window.__brixoShowStep(1);
+    }
+    if (modal) modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+  };
+
+  window.__brixoCloseCheckout = function(){
+    var modal = document.getElementById('brixo-checkout-backdrop');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+  };
+
+  window.__brixoSendVerification = function(){
+    var name = (document.getElementById('brixo-co-name')||{}).value || '';
+    var phone = (document.getElementById('brixo-co-phone')||{}).value || '';
+    var email = (document.getElementById('brixo-co-email')||{}).value || '';
+    var addr = (document.getElementById('brixo-co-address')||{}).value || '';
+
+    if (!name.trim() || !phone.trim() || !email.trim() || !addr.trim()) {
+      toast('Please fill in all contact and shipping fields');
+      return;
+    }
+
+    state.customer = { name: name.trim(), phone: phone.trim(), email: email.trim(), address: addr.trim() };
+
+    var btn = document.getElementById('brixo-btn-step1');
+    var orig = btn.textContent;
+    btn.textContent = 'Sending SMS Verification Code…';
+    btn.disabled = true;
+
+    fetch("${API_BASE}/api/verification/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: state.customer.email, phone: state.customer.phone })
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      btn.textContent = orig;
+      btn.disabled = false;
+      if (data.success) {
+        var hint = document.getElementById('brixo-dev-hint');
+        if (hint) {
+          var h = '<div style="font-size:12px;line-height:1.6">';
+          if (data.smsSent) {
+            h += '<div style="color:#34d399;font-weight:700">✓ Verification SMS sent to ' + escapeHTML(state.customer.phone) + '</div>';
+            if (data.emailSent) {
+              h += '<div style="color:#34d399;font-weight:700;margin-top:4px">✓ Verification Email sent to ' + escapeHTML(state.customer.email) + '</div>';
+            }
+          } else {
+            var reason = data.smsStatus || 'SMS gateway restriction';
+            h += '<div style="color:#fbbf24;font-weight:700;margin-bottom:4px">⚠️ ' + escapeHTML(reason) + '</div>' +
+                 '<div style="color:#e2e8f0;margin-bottom:6px">Verification Code: <strong style="color:#60a5fa;font-size:15px;letter-spacing:2px;background:#0f172a;padding:2px 8px;border-radius:4px;border:1px solid #334155">' + escapeHTML(data.devPhoneCode || (data.devCodes && data.devCodes.phoneCode) || '') + '</strong></div>';
+          }
+
+          if (!data.smsSent) {
+            h += '<div style="font-size:10px;opacity:0.75;margin-top:6px;border-top:1px dashed #334155;padding-top:4px">Tip: For instant testing, the 6-digit code has been pre-filled below. Real SMS delivers to Twilio-verified numbers (+919528620651).</div>';
+          }
+          h += '</div>';
+
+          hint.innerHTML = h;
+          hint.style.display = 'block';
+
+          var phoneInp = document.getElementById('brixo-co-phone-code');
+          if (data.devPhoneCode && phoneInp) phoneInp.value = data.devPhoneCode;
+          if (data.devCodes && data.devCodes.phoneCode && phoneInp) phoneInp.value = data.devCodes.phoneCode;
+        }
+        toast(data.smsSent ? 'Verification SMS dispatched' : 'Verification code generated');
+        window.__brixoShowStep(2);
+      } else {
+        toast('❌ ' + (data.message || 'Failed to send verification code'));
+      }
+    })
+    .catch(function(err){
+      btn.textContent = orig;
+      btn.disabled = false;
+      console.error('Send verification error:', err);
+      toast('Network error sending verification code');
+    });
+  };
+
+  window.__brixoConfirmVerification = function(){
+    var phoneCode = ((document.getElementById('brixo-co-phone-code')||{}).value || '').trim();
+
+    if (!phoneCode) {
+      toast('Please enter 6-digit mobile SMS code');
+      return;
+    }
+
+    var btn = document.getElementById('brixo-btn-step2');
+    var orig = btn.textContent;
+    btn.textContent = 'Validating Code…';
+    btn.disabled = true;
+
+    fetch("${API_BASE}/api/verification/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: state.customer.email,
+        phone: state.customer.phone,
+        phoneCode: phoneCode
+      })
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      btn.textContent = orig;
+      btn.disabled = false;
+      if (data.success) {
+        state.verificationToken = data.verificationToken || data.token;
+        var badge = document.getElementById('brixo-verified-badge');
+        if (badge) badge.textContent = 'Verified Mobile: ' + state.customer.phone;
+        toast('✅ Mobile number verified!');
+        window.__brixoShowStep(3);
+      } else {
+        toast('❌ ' + (data.message || 'Invalid verification code'));
+      }
+    })
+    .catch(function(err){
+      btn.textContent = orig;
+      btn.disabled = false;
+      console.error('Verify code error:', err);
+      toast('Network error validating code');
+    });
   };
 
   window.__brixoCoMethod = 'RAZORPAY';
@@ -503,22 +708,32 @@ ${pageNav}
       if(r2) r2.checked = true;
       if(optOnline) optOnline.style.borderColor = '#334155';
       if(optCod) optCod.style.borderColor = '${primary}';
-      if(payBtn) payBtn.textContent = 'Place COD Order';
+      if(payBtn) payBtn.textContent = 'Place Cash on Delivery Order';
     }
   };
 
-  window.__brixoCloseCheckout = function(){
-    document.getElementById('brixo-checkout-backdrop').style.display = 'none';
-    document.body.style.overflow = '';
-  };
+  function showOrderSuccess(orderId, customerName, totalAmt, method, status){
+    var idEl = document.getElementById('brixo-conf-id');
+    var nameEl = document.getElementById('brixo-conf-name');
+    var amtEl = document.getElementById('brixo-conf-amount');
+    var methodEl = document.getElementById('brixo-conf-method');
+    var statusEl = document.getElementById('brixo-conf-status');
+    if (idEl) idEl.textContent = orderId;
+    if (nameEl) nameEl.textContent = customerName;
+    if (amtEl) amtEl.textContent = '₹' + totalAmt;
+    if (methodEl) methodEl.textContent = method;
+    if (statusEl) statusEl.textContent = status;
+    window.__brixoShowStep(4);
+    state.items = [];
+    state.verificationToken = null;
+    save();
+    renderItems();
+  }
 
   window.__brixoPay = function(){
-    var email = (document.getElementById('brixo-co-email')||{}).value || '';
-    var phone = (document.getElementById('brixo-co-phone')||{}).value || '';
-    var name = (document.getElementById('brixo-co-name')||{}).value || '';
-    var addr = (document.getElementById('brixo-co-address')||{}).value || '';
-    if (!email || !name || !phone || !addr) {
-      toast('Please fill in your contact, phone & shipping details');
+    if (!state.verificationToken) {
+      toast('Please complete verification first');
+      window.__brixoShowStep(2);
       return;
     }
 
@@ -528,55 +743,65 @@ ${pageNav}
     var n = count();
 
     if (window.__brixoCoMethod === 'COD') {
-      btn.textContent = 'Placing Order…'; btn.disabled = true;
+      btn.textContent = 'Placing Order…';
+      btn.disabled = true;
       fetch("${API_BASE}/api/orders/place-cod", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerName: name,
-          customerPhone: phone,
-          customerEmail: email,
+          customerName: state.customer.name,
+          customerPhone: state.customer.phone,
+          customerEmail: state.customer.email,
+          shippingAddress: state.customer.address,
           items: state.items,
           totalAmount: t,
-          siteId: "${jsEsc(project.id)}"
+          siteId: "${jsEsc(project.id)}",
+          verificationToken: state.verificationToken
         })
       })
       .then(function(res){ return res.json(); })
       .then(function(resData){
-        btn.textContent = orig; btn.disabled = false;
+        btn.textContent = orig;
+        btn.disabled = false;
         if (resData.success) {
-          window.__brixoCloseCheckout();
           var orderId = resData.order ? resData.order.orderId : 'ORD-' + Math.random().toString(36).slice(2,8).toUpperCase();
-          toast('✅ COD Order placed successfully! ID: ' + orderId);
-          alert('Order Confirmed!\n\nOrder ID: ' + orderId + '\nCustomer: ' + name + '\nTotal: ₹' + t + '\nPayment Method: Cash on Delivery\nPayment Status: Pending\n\nSMS confirmation sent to ' + phone + '.');
-          state.items = [];
-          save();
-          renderItems();
+          showOrderSuccess(orderId, state.customer.name, t, 'Cash on Delivery', 'PENDING (COD)');
+          toast('✅ COD Order Placed: ' + orderId);
         } else {
           toast('❌ Placement failed: ' + resData.message);
         }
       })
       .catch(function(err){
-        btn.textContent = orig; btn.disabled = false;
+        btn.textContent = orig;
+        btn.disabled = false;
         console.error('COD placement error:', err);
         toast('Order placement network error');
       });
       return;
     }
 
-    btn.textContent = 'Connecting Razorpay…'; btn.disabled = true;
+    btn.textContent = 'Connecting Razorpay…';
+    btn.disabled = true;
 
-    // 1. Create Razorpay Order
+    // 1. Create Razorpay Cart Order on backend
     fetch("${API_BASE}/api/payment/create-cart-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: t, items: state.items, customerName: name, customerPhone: phone })
+      body: JSON.stringify({
+        amount: t,
+        items: state.items,
+        customerName: state.customer.name,
+        customerPhone: state.customer.phone,
+        customerEmail: state.customer.email,
+        verificationToken: state.verificationToken
+      })
     })
     .then(function(res){ return res.json(); })
     .then(function(resData){
       if (!resData.success) {
-        toast('Failed to initialize Razorpay order');
-        btn.textContent = orig; btn.disabled = false;
+        toast('Failed to initialize Razorpay: ' + (resData.message || ''));
+        btn.textContent = orig;
+        btn.disabled = false;
         return;
       }
       var order = resData.order;
@@ -589,7 +814,11 @@ ${pageNav}
         name: "${jsEsc(project.name)}",
         description: "Order for " + n + " items",
         order_id: order.id,
-        prefill: { name: name, contact: phone, email: email },
+        prefill: {
+          name: state.customer.name,
+          contact: state.customer.phone,
+          email: state.customer.email
+        },
         theme: { color: "${primary}" },
         handler: function(rzpResp){
           btn.textContent = 'Verifying Payment…';
@@ -600,38 +829,39 @@ ${pageNav}
               razorpay_order_id: rzpResp.razorpay_order_id,
               razorpay_payment_id: rzpResp.razorpay_payment_id,
               razorpay_signature: rzpResp.razorpay_signature,
-              customerName: name,
-              customerPhone: phone,
-              customerEmail: email,
+              customerName: state.customer.name,
+              customerPhone: state.customer.phone,
+              customerEmail: state.customer.email,
+              shippingAddress: state.customer.address,
               items: state.items,
               totalAmount: t,
-              siteId: "${jsEsc(project.id)}"
+              siteId: "${jsEsc(project.id)}",
+              verificationToken: state.verificationToken
             })
           })
           .then(function(vRes){ return vRes.json(); })
           .then(function(vData){
-            btn.textContent = orig; btn.disabled = false;
+            btn.textContent = orig;
+            btn.disabled = false;
             if (vData.success) {
-              window.__brixoCloseCheckout();
               var orderId = vData.order ? vData.order.orderId : 'ORD-' + Math.random().toString(36).slice(2,8).toUpperCase();
-              toast('✅ Payment verified & order saved! ID: ' + orderId);
-              alert('Order Confirmed!\\n\\nOrder ID: ' + orderId + '\\nCustomer: ' + name + '\\nTotal Paid: ₹' + t + '\\nPayment Status: PAID\\n\\nSMS confirmation sent to ' + phone + '.');
-              state.items = [];
-              save();
-              renderItems();
+              showOrderSuccess(orderId, state.customer.name, t, 'Razorpay Online', 'PAID');
+              toast('✅ Payment verified & order saved!');
             } else {
               toast('❌ Verification failed: ' + vData.message);
             }
           })
           .catch(function(err){
-            btn.textContent = orig; btn.disabled = false;
+            btn.textContent = orig;
+            btn.disabled = false;
             console.error('Verify error:', err);
             toast('Payment verification network error');
           });
         },
         modal: {
           ondismiss: function(){
-            btn.textContent = orig; btn.disabled = false;
+            btn.textContent = orig;
+            btn.disabled = false;
           }
         }
       };
@@ -641,18 +871,85 @@ ${pageNav}
         rzp.open();
       } else {
         toast('Razorpay SDK not loaded');
-        btn.textContent = orig; btn.disabled = false;
+        btn.textContent = orig;
+        btn.disabled = false;
       }
     })
     .catch(function(err){
       console.error('Order err:', err);
       toast('Error initiating Razorpay checkout');
-      btn.textContent = orig; btn.disabled = false;
+      btn.textContent = orig;
+      btn.disabled = false;
     });
   };
 
   window.__brixoNotify = function(msg){ toast(msg); };
 
+  window.__brixoNavigate = function(target){
+    if (!target) return;
+    var tLow = target.toLowerCase().trim();
+
+    // 1. Match page tab
+    var tabs = document.querySelectorAll('.brixo-page-tab');
+    var pages = document.querySelectorAll('.brixo-page');
+    var foundIdx = -1;
+    tabs.forEach(function(tab, i){
+      if (tab.textContent.trim().toLowerCase() === tLow) foundIdx = i;
+    });
+
+    if (foundIdx !== -1) {
+      pages.forEach(function(p){
+        p.style.display = p.getAttribute('data-page-idx') == foundIdx ? 'block' : 'none';
+      });
+      tabs.forEach(function(t){ t.style.opacity = '0.5'; });
+      if (tabs[foundIdx]) tabs[foundIdx].style.opacity = '1';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // 2. Open cart if target mentions cart
+    if (tLow.indexOf('cart') !== -1) {
+      window.__brixoOpenCart();
+      return;
+    }
+
+    // 3. Scroll to specific section id
+    var el = document.getElementById(tLow) || document.getElementById(tLow.replace(/[^a-z0-9]/g, '-'));
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    // 4. Try matching block types
+    var block = document.querySelector('[data-block-type="' + target + '"]') ||
+                document.querySelector('[data-block-type="' + target.charAt(0).toUpperCase() + target.slice(1).toLowerCase() + '"]');
+    if (block) {
+      block.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    // Fallback scroll
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  window.__brixoHeroAction = function(){
+    var prod = document.querySelector('[data-block-type="Products"]') || document.getElementById('products');
+    if (prod) {
+      prod.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    var services = document.querySelector('[data-block-type="Services"]') || document.getElementById('services');
+    if (services) {
+      services.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    var contact = document.getElementById('contact');
+    if (contact) {
+      contact.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    window.__brixoOpenCart();
+  };
 
   // Cart item click delegation
   document.addEventListener('click', function(e){

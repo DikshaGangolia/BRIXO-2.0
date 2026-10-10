@@ -9,7 +9,7 @@ const Order = require("../models/Order");
 const createOrder = async (req, res) => {
   try {
     const { planType, amount: customAmount } = req.body;
-    
+
     let amount = customAmount;
     if (planType === "pro") {
       amount = 499;
@@ -37,9 +37,12 @@ const createOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("Order creation error:", error);
-    res.status(500).json({
+    const desc = error?.error?.description || error.message || "Failed to create Razorpay order";
+    res.status(400).json({
       success: false,
-      message: "Failed to create Razorpay order",
+      message: desc.includes("Authentication failed")
+        ? "Razorpay authentication failed: Invalid or missing RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET in backend/.env"
+        : desc,
     });
   }
 };
@@ -143,8 +146,8 @@ const verifyPayment = async (req, res) => {
 // Create Razorpay Order specifically for customer shopping cart items
 const createCartOrder = async (req, res) => {
   try {
-    const { amount } = req.body;
-    
+    const { amount, customerEmail, customerPhone, verificationToken } = req.body;
+
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       return res.status(400).json({
@@ -153,8 +156,18 @@ const createCartOrder = async (req, res) => {
       });
     }
 
-    // Convert INR rupees to paise (e.g., 0.10 * 100 = 10 paise)
-    const amountInPaise = Math.round(numAmount * 100);
+    if (customerPhone) {
+      const { isCustomerVerified } = require("./verificationController");
+      if (!isCustomerVerified(customerEmail, customerPhone, verificationToken)) {
+        return res.status(400).json({
+          success: false,
+          message: "Customer mobile number must be verified before proceeding to payment.",
+        });
+      }
+    }
+
+    // Convert INR rupees to paise (Razorpay minimum is 100 paise / ₹1.00)
+    const amountInPaise = Math.max(100, Math.round(numAmount * 100));
 
     const options = {
       amount: amountInPaise,
@@ -171,9 +184,12 @@ const createCartOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("Cart order creation error:", error);
-    res.status(500).json({
+    const desc = error?.error?.description || error.message || "Failed to create cart Razorpay order";
+    res.status(400).json({
       success: false,
-      message: "Failed to create cart Razorpay order: " + error.message,
+      message: desc.includes("Authentication failed")
+        ? "Razorpay authentication failed: Invalid or missing RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET in backend/.env"
+        : desc,
     });
   }
 };
@@ -234,7 +250,7 @@ const verifyCartPayment = async (req, res) => {
       orderId: generatedOrderId,
       user: projectOwner,
       customerName: customerName || "Valued Customer",
-      customerPhone: customerPhone || "+919528620651",
+      customerPhone: customerPhone || "+911234567890",
       customerEmail: customerEmail || "",
       items: items || [],
       totalAmount: parseFloat(totalAmount) || 0.1,
@@ -268,15 +284,35 @@ Payment Status: PAID
 
 Thank you for shopping with BRIXO!`;
 
+        const { formatE164Phone } = require("./verificationController");
         await client.messages.create({
           body: messageBody,
           from: process.env.TWILIO_PHONE_NUMBER,
-          to: customerPhone || "+919528620651",
+          to: formatE164Phone(customerPhone || "+919528620651"),
         });
         smsSent = true;
       }
     } catch (smsErr) {
       console.error("Twilio SMS dispatch failed (ignored, order saved):", smsErr.message);
+    }
+
+    // 5. Send confirmation email if email configured
+    if (customerEmail) {
+      try {
+        const sendEmail = require("../utils/sendEmail");
+        const itemNames = (items || []).map(i => i.name).join(", ") || "Selected items";
+        await sendEmail({
+          name: customerName,
+          email: customerEmail,
+          phone: customerPhone,
+          address: req.body.address || "Standard Delivery",
+          productName: itemNames,
+          orderId: generatedOrderId,
+          total: parseFloat(totalAmount || 0.1).toFixed(2),
+        });
+      } catch (emailErr) {
+        console.error("Email confirmation dispatch skipped/failed:", emailErr.message);
+      }
     }
 
     res.status(200).json({

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { create } from 'zustand';
 import type { WebsiteProject, UserSession } from '../types/builder';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://brixo-2-0.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 interface AuthState {
   session: UserSession;
@@ -19,7 +19,7 @@ interface AuthState {
   createProject: (project: WebsiteProject) => Promise<string>;
   deleteProject: (id: string) => Promise<void>;
   duplicateProject: (id: string) => Promise<void>;
-  updateProject: (project: WebsiteProject) => Promise<void>;
+  updateProject: (project: WebsiteProject) => Promise<WebsiteProject | null>;
   publishProject: (id: string) => Promise<{ publishUrl: string; slug: string }>;
   fetchPaymentHistory: () => Promise<void>;
   fetchSubscriptionStatus: () => Promise<void>;
@@ -41,9 +41,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   login: async (email, password) => {
     try {
+      const cleanEmail = String(email || '').trim();
       const response = await axios.post(
         `${API_BASE_URL}/api/auth/login`,
-        { email, password }
+        { email: cleanEmail, password }
       );
 
       const { token, user } = response.data;
@@ -70,9 +71,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signup: async (name, email, password) => {
     try {
+      const cleanName = String(name || '').trim();
+      const cleanEmail = String(email || '').trim().toLowerCase();
       const response = await axios.post(
         `${API_BASE_URL}/api/auth/register`,
-        { name, email, password }
+        { name: cleanName, email: cleanEmail, password }
       );
 
       const { token, user } = response.data;
@@ -109,18 +112,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   loadProjects: async () => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const response = await axios.get(
-      `${API_BASE_URL}/api/projects`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+    try {
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {};
+      if (token && token !== "null" && token !== "undefined") {
+        headers["Authorization"] = `Bearer ${token}`;
       }
-    );
+
+      const response = await axios.get(
+        `${API_BASE_URL}/api/projects`,
+        { headers }
+      );
 
     const mappedProjects = response.data.projects.map((p: any) => ({
       id: p._id,
@@ -143,22 +145,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 },
 
   createProject: async (project) => {
-  try {
-    const token = localStorage.getItem("token");
-
-    const response = await axios.post(
-      `${API_BASE_URL}/api/projects`,
-      {
-        title: project.name,
-        description: project.category,
-        data: project.config
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+    try {
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {};
+      if (token && token !== "null" && token !== "undefined") {
+        headers["Authorization"] = `Bearer ${token}`;
       }
-    );
+
+      const response = await axios.post(
+        `${API_BASE_URL}/api/projects`,
+        {
+          title: project.name,
+          description: project.category,
+          data: project.config
+        },
+        { headers }
+      );
 
     const savedProject = response.data.project;
     const mappedProject: WebsiteProject = {
@@ -242,42 +244,76 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 },
 
   updateProject: async (project) => {
-  try {
-    const token = localStorage.getItem("token");
-
-    const response = await axios.put(
-      `${API_BASE_URL}/api/projects/${project.id}`,
-      {
-        title: project.name,
-        description: project.category,
-        data: project.config
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+    try {
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {};
+      if (token && token !== "null" && token !== "undefined") {
+        headers["Authorization"] = `Bearer ${token}`;
       }
-    );
 
-    set(state => ({
-      projects: state.projects.map(p =>
-        p.id === project.id
-          ? {
-              id: response.data.project._id,
-              name: response.data.project.title,
-              category: response.data.project.description,
-              templateName: response.data.project.data?.templateName || "",
-              config: response.data.project.data,
-              createdAt: response.data.project.createdAt,
-              updatedAt: response.data.project.updatedAt,
+      const targetId = project.id || 'new';
+
+      const response = await axios.put(
+        `${API_BASE_URL}/api/projects/${targetId}`,
+        {
+          title: project.name,
+          description: project.category,
+          data: project.config
+        },
+        { headers }
+      );
+
+      const savedProject = response.data?.project;
+      if (!savedProject) {
+        console.error("No project returned in update response:", response.data);
+        return null;
+      }
+
+      const mappedProject: WebsiteProject = {
+        id: savedProject._id,
+        name: savedProject.title,
+        category: savedProject.description,
+        templateName: savedProject.data?.templateName || "",
+        config: savedProject.data,
+        published: savedProject.published || false,
+        slug: savedProject.slug || null,
+        createdAt: savedProject.createdAt,
+        updatedAt: savedProject.updatedAt,
+      };
+
+      set(state => ({
+        projects: state.projects.some(p => p.id === project.id || p.id === mappedProject.id)
+          ? state.projects.map(p =>
+              p.id === project.id || p.id === mappedProject.id ? mappedProject : p
+            )
+          : [mappedProject, ...state.projects]
+      }));
+
+      // Synchronize activeProject in useBuilderStore if currently active
+      try {
+        const { useBuilderStore } = await import('./useBuilderStore');
+        const currentActive = useBuilderStore.getState().activeProject;
+        if (currentActive && (currentActive.id === project.id || !currentActive.id)) {
+          useBuilderStore.setState({
+            activeProject: {
+              ...currentActive,
+              id: mappedProject.id,
+              name: mappedProject.name,
+              category: mappedProject.category,
+              updatedAt: mappedProject.updatedAt
             }
-          : p
-      )
-    }));
-  } catch (error) {
-    console.log("UPDATE PROJECT ERROR:", error);
-  }
-},
+          });
+        }
+      } catch (_e) {
+        // Ignored
+      }
+
+      return mappedProject;
+    } catch (error: any) {
+      console.error("UPDATE PROJECT ERROR:", error.response?.data || error.message);
+      return null;
+    }
+  },
 
   publishProject: async (id) => {
     try {

@@ -305,7 +305,7 @@ export const BuilderDashboard: React.FC = () => {
 
   const handleRazorpayPayment = async (platform: 'Vercel' | 'Netlify' | 'GitHub Pages') => {
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://brixo-2-0.onrender.com';
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const orderRes = await axios.post(`${API_BASE}/api/payment/create-order`, {
         planType: 'pro'
       });
@@ -409,7 +409,7 @@ export const BuilderDashboard: React.FC = () => {
     try {
       // Call real publish API
       const token = localStorage.getItem('token');
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://brixo-2-0.onrender.com';
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const pid = projectId || config.businessName.toLowerCase().replace(/[^a-z0-9]/g, '-');
       const response = await fetch(`${API_BASE}/api/projects/publish/${pid}`, {
         method: 'PUT',

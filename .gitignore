@@ -1,1 +1,13 @@
 .vscode/
+.env
+.env.*
+**/.env
+**/.env.*
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+*.pem
+*.key
+credentials.json
+secrets.json

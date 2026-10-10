@@ -12,6 +12,7 @@ const {
   publishProject,
   unpublishProject,
   getPublicSiteBySlug,
+  verifyExportOwnership,
 } = require("../controllers/projectController");
 
 // Create project
@@ -20,6 +21,9 @@ router.post("/", createProject);
 // Public Preview & Slug Routes (No Auth required)
 router.get("/public/slug/:slug", getPublicSiteBySlug);
 router.get("/public/:id", getPublicProjectById);
+
+// Verify ownership before ZIP export
+router.post("/:id/verify-export", verifyExportOwnership);
 
 // Get all projects
 router.get("/", getProjects);

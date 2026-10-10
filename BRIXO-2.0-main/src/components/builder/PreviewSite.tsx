@@ -106,42 +106,60 @@ const PreviewSite: React.FC = () => {
     );
   }
 
-  const currentPage = project.data.pages[activePageIdx];
+  const rawData = project.data?.config || project.data || {};
+  const pages = rawData.pages || [];
+  const currentPage = pages[activePageIdx] || pages[0];
+  const designTokens = {
+    primaryColor: '#3b82f6',
+    secondaryColor: '#1d4ed8',
+    accentColor: '#f59e0b',
+    backgroundColor: '#ffffff',
+    textColor: '#0f172a',
+    fontFamily: 'font-sans',
+    borderRadius: 'rounded-xl',
+    boxShadow: 'shadow-md',
+    glassmorphism: false,
+    paddingTop: 'py-16',
+    paddingBottom: 'py-16',
+    marginTop: 'my-0',
+    marginBottom: 'my-0',
+    ...(rawData.designTokens || {})
+  };
 
   return (
     <div
       className="min-h-screen"
       style={{
-        backgroundColor: project.data.designTokens.backgroundColor,
+        backgroundColor: designTokens.backgroundColor,
       }}
     >
       {/* Page Navigation Bar */}
       <nav
         className="sticky top-0 z-50 border-b backdrop-blur-md"
         style={{
-          background: project.data.designTokens.backgroundColor + "dd",
-          borderColor: project.data.designTokens.primaryColor + "15",
-          color: project.data.designTokens.textColor,
+          background: designTokens.backgroundColor + "dd",
+          borderColor: designTokens.primaryColor + "15",
+          color: designTokens.textColor,
         }}
       >
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <span
               className="text-sm font-black uppercase tracking-tighter flex items-center gap-1.5"
-              style={{ color: project.data.designTokens.primaryColor }}
+              style={{ color: designTokens.primaryColor }}
             >
               <Sparkles className="w-4 h-4 text-blue-500" />
               {project.title}
             </span>
             <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest">
-              {project.data.pages.map((p: any, idx: number) => (
+              {pages.map((p: any, idx: number) => (
                 <button
                   key={p.id}
                   onClick={() => setActivePageIdx(idx)}
                   className={`transition-all hover:opacity-100 ${
                     activePageIdx === idx ? "opacity-100 font-extrabold" : "opacity-40"
                   }`}
-                  style={{ color: project.data.designTokens.textColor }}
+                  style={{ color: designTokens.textColor }}
                 >
                   {p.name}
                 </button>
@@ -152,7 +170,7 @@ const PreviewSite: React.FC = () => {
           <button
             onClick={toggleCart}
             className="relative p-2 rounded-full hover:bg-black/5 transition-colors"
-            style={{ color: project.data.designTokens.primaryColor }}
+            style={{ color: designTokens.primaryColor }}
           >
             <ShoppingBag className="w-5 h-5" />
             {cartCount > 0 && (
@@ -170,17 +188,17 @@ const PreviewSite: React.FC = () => {
           <CleanBlockRenderer
             key={comp.id}
             comp={comp}
-            tokens={project.data.designTokens}
-            pages={project.data.pages}
+            tokens={designTokens}
+            pages={pages}
             onNavigate={(id) => {
-              const idx = project.data.pages.findIndex((p: any) => p.id === id);
+              const idx = pages.findIndex((p: any) => p.id === id);
               if (idx !== -1) setActivePageIdx(idx);
             }}
           />
         ))}
       </div>
 
-      <CartSidebar />
+      <CartSidebar isBuilderMode={false} />
     </div>
   );
 };

@@ -25,24 +25,42 @@ import { generatePublishedHTML } from '../../utils/publishHtml';
 
 // Backend base URL (used by other flows). Kept for future extensibility.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _API_BASE_URL = 'https://brixo-2-0.onrender.com';
+const _API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 void _API_BASE_URL;
+
+const DEFAULT_TOKENS: DesignTokens = {
+  primaryColor: '#3b82f6',
+  secondaryColor: '#1d4ed8',
+  accentColor: '#f59e0b',
+  backgroundColor: '#ffffff',
+  textColor: '#0f172a',
+  fontFamily: 'font-sans',
+  borderRadius: 'rounded-xl',
+  boxShadow: 'shadow-md',
+  glassmorphism: false,
+  paddingTop: 'py-16',
+  paddingBottom: 'py-16',
+  marginTop: 'my-0',
+  marginBottom: 'my-0'
+};
 
 // Helper: Products block with real Add to Cart for CleanBlockRenderer
 const ProductsWithCart = ({ comp, tokens, onNavigate, pages, cartCount }: {
   comp: ComponentBlock;
-  tokens: DesignTokens;
+  tokens?: DesignTokens;
   onNavigate: (id: string) => void;
-  pages: any[];
+  pages?: any[];
   cartCount: number;
 }) => {
   const { addToCart } = useCartStore();
-  const rounded = tokens.borderRadius;
-  const shadow = tokens.boxShadow;
-  const pyTop = comp.styles?.paddingTop || tokens.paddingTop;
-  const pyBottom = comp.styles?.paddingBottom || tokens.paddingBottom;
-  const headingFont = tokens.fontFamily === 'font-serif' ? 'font-serif' : tokens.fontFamily === 'font-mono' ? 'font-mono' : 'font-sans';
+  const safeTokens = { ...DEFAULT_TOKENS, ...(tokens || {}) };
+  const rounded = safeTokens.borderRadius || 'rounded-xl';
+  const shadow = safeTokens.boxShadow || 'shadow-md';
+  const pyTop = comp.styles?.paddingTop || safeTokens.paddingTop || 'py-16';
+  const pyBottom = comp.styles?.paddingBottom || safeTokens.paddingBottom || 'py-16';
+  const headingFont = safeTokens.fontFamily === 'font-serif' ? 'font-serif' : safeTokens.fontFamily === 'font-mono' ? 'font-mono' : 'font-sans';
   const { siteId } = useParams<{ siteId?: string }>();
+  tokens = safeTokens;
 
   return (
     <section className={`${pyTop} ${pyBottom} px-8`} style={{ background: tokens.backgroundColor, color: tokens.textColor }}>
@@ -80,7 +98,7 @@ const ProductsWithCart = ({ comp, tokens, onNavigate, pages, cartCount }: {
 
   try {
     await axios.post("http://localhost:5000/api/twilio/send-sms", {
-      phone: "+919528620651",
+      phone: "+911234567890",
       productName: p.name,
     });
     console.log("SMS sent");
@@ -147,20 +165,50 @@ export const BuilderInterface: React.FC = () => {
       }
 
       // 3. Find matching project in store
-      const match = currentProjects.find(p => p.id === siteId);
+      let match = currentProjects.find(p => p.id === siteId);
+
+      // 4. If not found in store, fetch directly from backend API
+      if (!match && siteId) {
+        try {
+          const token = localStorage.getItem("token");
+          const headers: Record<string, string> = {};
+          if (token && token !== "null" && token !== "undefined") {
+            headers["Authorization"] = `Bearer ${token}`;
+          }
+          const res = await axios.get(`${_API_BASE_URL}/api/projects/${siteId}`, { headers });
+          if (res.data?.project) {
+            const p = res.data.project;
+            match = {
+              id: p._id,
+              name: p.title,
+              category: p.description,
+              templateName: p.data?.templateName || "",
+              config: p.data,
+              published: p.published || false,
+              slug: p.slug || null,
+              createdAt: p.createdAt,
+              updatedAt: p.updatedAt,
+            };
+            useAuthStore.setState(state => ({
+              projects: [match!, ...state.projects]
+            }));
+          }
+        } catch (_fetchErr) {
+          // Direct fetch failed, will try fallback
+        }
+      }
+
       if (match) {
         loadProject(match);
         if (isSubscribed) setIsInitializing(false);
+      } else if (currentProjects.length > 0) {
+        // Fallback to first available project
+        loadProject(currentProjects[0]);
+        if (isSubscribed) setIsInitializing(false);
       } else {
-        // Re-check active project state one more time
-        const recheckActive = useBuilderStore.getState().activeProject;
-        if (recheckActive && recheckActive.id === siteId) {
-          if (isSubscribed) setIsInitializing(false);
-        } else {
-          if (isSubscribed) {
-            setLoadError(`Project with ID "${siteId}" could not be found.`);
-            setIsInitializing(false);
-          }
+        if (isSubscribed) {
+          setLoadError(`Project with ID "${siteId}" could not be found.`);
+          setIsInitializing(false);
         }
       }
     };
@@ -315,7 +363,7 @@ export const BuilderInterface: React.FC = () => {
 
                 {/* Visual links router preview */}
                 <div className="flex gap-2 text-2xs font-bold bg-slate-950 p-1 rounded-xl">
-                  {activeProject.config.pages.map(p => (
+                  {(activeProject?.config?.pages || activeProject?.data?.pages || []).map(p => (
                     <button
                       key={p.id}
                       onClick={() => setActivePageId(p.id)}
@@ -338,18 +386,27 @@ export const BuilderInterface: React.FC = () => {
             </div>
 
             {/* Simulated Live preview frame */}
-            <div className="flex-1 bg-white overflow-y-auto select-none" style={{ backgroundColor: activeProject.config.designTokens.backgroundColor }}>
+            <div className="flex-1 bg-white overflow-y-auto select-none" style={{ backgroundColor: activeProject?.config?.designTokens?.backgroundColor || '#ffffff' }}>
               {(() => {
-                const previewPage = activeProject.config.pages.find(p => p.id === activePageId);
-                if (!previewPage) return null;
+                const previewPages = activeProject?.config?.pages || activeProject?.data?.pages || [];
+                const previewPage = previewPages.find(p => p.id === activePageId) || previewPages[0];
+                if (!previewPage) {
+                  return (
+                    <div className="flex flex-col items-center justify-center min-h-[300px] text-slate-500 font-bold text-xs uppercase tracking-wider p-8">
+                      No components found on this page.
+                    </div>
+                  );
+                }
+
+                const tokens = activeProject?.config?.designTokens || activeProject?.data?.designTokens || DEFAULT_TOKENS;
 
                 // Renders clean templates blocks without outline overlays
                 return (
                   <div className="flex flex-col min-h-full">
-                    {previewPage.components.map((comp) => (
-                      <div key={comp.id} className={`${activeProject.config.designTokens.fontFamily} ${activeProject.config.designTokens.boxShadow}`}>
+                    {(previewPage.components || []).map((comp) => (
+                      <div key={comp.id} className={`${tokens.fontFamily || 'font-sans'} ${tokens.boxShadow || 'shadow-md'}`}>
                         {/* Simulates simple text render outputs */}
-                        <CleanBlockRenderer comp={comp} tokens={activeProject.config.designTokens} onNavigate={setActivePageId} pages={activeProject.config.pages} />
+                        <CleanBlockRenderer comp={comp} tokens={tokens} onNavigate={setActivePageId} pages={previewPages} />
                       </div>
                     ))}
                   </div>
@@ -507,7 +564,7 @@ export const BuilderInterface: React.FC = () => {
       </AnimatePresence>
 
       {/* Cart Sidebar */}
-      <CartSidebar />
+      <CartSidebar isBuilderMode={true} />
     </div>
   );
 };
@@ -516,17 +573,19 @@ const CleanBlockRenderer = ({
   comp,
   tokens,
   onNavigate,
-  pages
+  pages = []
 }: {
   comp: ComponentBlock;
-  tokens: DesignTokens;
-  onNavigate: (id: string) => void;
-  pages: any[];
+  tokens?: DesignTokens;
+  onNavigate?: (id: string) => void;
+  pages?: any[];
 }) => {
-  const rounded = tokens.borderRadius;
-  const shadow = tokens.boxShadow;
-  const pyTop = comp.styles.paddingTop || tokens.paddingTop;
-  const pyBottom = comp.styles.paddingBottom || tokens.paddingBottom;
+  const safeTokens = { ...DEFAULT_TOKENS, ...(tokens || {}) };
+  const rounded = safeTokens.borderRadius || 'rounded-xl';
+  const shadow = safeTokens.boxShadow || 'shadow-md';
+  const pyTop = comp.styles?.paddingTop || safeTokens.paddingTop || 'py-16';
+  const pyBottom = comp.styles?.paddingBottom || safeTokens.paddingBottom || 'py-16';
+  tokens = safeTokens;
 
   if (comp.customCode?.html) {
     return (

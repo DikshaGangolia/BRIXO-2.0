@@ -39,7 +39,7 @@ interface BuilderState {
   pushHistory: () => void;
   undo: () => void;
   redo: () => void;
-  saveActiveProject: () => void;
+  saveActiveProject: () => Promise<any>;
 }
 
 export const useBuilderStore = create<BuilderState>((set, get) => ({
@@ -639,11 +639,11 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     get().saveActiveProject();
   },
 
-  saveActiveProject: () => {
+  saveActiveProject: async () => {
     const activeProject = get().activeProject;
-    if (!activeProject) return;
+    if (!activeProject) return null;
 
-    // Trigger auth store to update local storage
-    useAuthStore.getState().updateProject(activeProject);
+    // Trigger auth store to save project to MongoDB
+    return await useAuthStore.getState().updateProject(activeProject);
   }
 }));

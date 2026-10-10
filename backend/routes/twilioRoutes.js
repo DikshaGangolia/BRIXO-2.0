@@ -11,13 +11,28 @@ console.log(
   process.env.TWILIO_AUTH_TOKEN ? "Loaded" : "Missing"
 );
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const getTwilioClient = () => {
+  const sid = process.env.TWILIO_ACCOUNT_SID;
+  const token = process.env.TWILIO_AUTH_TOKEN;
+  if (sid && token && !sid.includes("dummy") && !sid.includes("your_")) {
+    try {
+      return twilio(sid, token);
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
 
 router.post("/send-sms", async (req, res) => {
   try {
+    const client = getTwilioClient();
+    if (!client) {
+      return res.status(200).json({
+        success: true,
+        message: "Twilio credentials not configured; SMS notification skipped in development mode."
+      });
+    }
     const {
       phone,
       name,
@@ -41,7 +56,7 @@ Payment Status: ${status || "PAID"}
 
 Thank you for shopping with BRIXO!`,
       from: process.env.TWILIO_PHONE_NUMBER,
-      to: phone || "+919528620651",
+      to: phone || "+911234567890",
     });
 
     res.json({

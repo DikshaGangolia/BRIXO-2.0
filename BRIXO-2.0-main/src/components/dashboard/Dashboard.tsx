@@ -28,7 +28,8 @@ import {
   X,
   Menu,
   Code2,
-  Zap
+  Zap,
+  FileCode
 } from 'lucide-react';
 
 import { useAuthStore } from '../../store/useAuthStore';
@@ -39,7 +40,8 @@ import type { WebsiteProject } from '../../types/builder';
 import { PaymentHistoryModal } from './PaymentHistoryModal';
 import { ShopkeeperOrdersModal } from './ShopkeeperOrdersModal';
 import { OwnerDeveloperPanelModal } from './OwnerDeveloperPanelModal';
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://brixo-2-0.onrender.com';
+import { DownloadConfigModal } from './DownloadConfigModal';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const Dashboard: React.FC = () => {
   const { session, projects, loadProjects, createProject, deleteProject, duplicateProject, logout } = useAuthStore();
@@ -60,6 +62,9 @@ export const Dashboard: React.FC = () => {
   const [showBillingHistory, setShowBillingHistory] = useState(false);
   const [showShopkeeperOrders, setShowShopkeeperOrders] = useState(false);
   const [devPanelSiteId, setDevPanelSiteId] = useState<string | null>(null);
+  const [downloadProject, setDownloadProject] = useState<WebsiteProject | null>(null);
+  const [exportModalProject, setExportModalProject] = useState<WebsiteProject | null>(null);
+  const [isExportingZip, setIsExportingZip] = useState(false);
 
   useEffect(() => {
     loadProjects();
@@ -251,6 +256,28 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+
+  const handleZipDownload = async () => {
+    if (!exportModalProject) return;
+    setIsExportingZip(true);
+    try {
+      const blob = await exportSiteZip(exportModalProject);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${exportModalProject.name.toLowerCase().replace(/\s+/g, '_')}_source_code.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setExportModalProject(null);
+    } catch (err) {
+      console.error('Failed to export project zip:', err);
+      alert('Failed to generate zip export folder.');
+    } finally {
+      setIsExportingZip(false);
+    }
+  };
 
   const handleExport = async (project: WebsiteProject) => {
     try {
@@ -489,27 +516,19 @@ lg:space-y-8
                       Visual Edit
                     </button>
                     <button
-                      onClick={() => setDevPanelSiteId(proj.id)}
-                      title="Open Owner Developer Panel"
-                      className="py-1.5 px-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-3xs font-bold rounded-lg text-white flex items-center justify-center gap-1 transition-all shadow cursor-pointer"
+                      onClick={() => setExportModalProject(proj)}
+                      title="Export ZIP"
+                      className="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-blue-500/40 text-3xs font-bold rounded-lg text-slate-200 flex items-center justify-center gap-1.5 transition-all shadow cursor-pointer active:scale-95"
                     >
-                      <Code2 className="w-3 h-3" />
-                      Dev Panel
+                      <Download className="w-3.5 h-3.5 text-blue-400" />
+                      Export ZIP
                     </button>
                     <button
                       onClick={() => duplicateProject(proj.id)}
                       title="Duplicate Project"
-                      className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-200 transition-all"
+                      className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
                     >
                       <Copy className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={() => handleExport(proj)}
-                      title="Download Source Code ZIP"
-                      className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-200 transition-all"
-                    >
-                      <Download className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => {
@@ -823,6 +842,72 @@ lg:space-y-8
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {downloadProject && (
+          <DownloadConfigModal project={downloadProject} onClose={() => setDownloadProject(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* --- EXPORT SOURCE CODE MODAL (CANVAS EQUIVALENT) --- */}
+      <AnimatePresence>
+        {exportModalProject && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md space-y-5 shadow-2xl text-slate-100"
+            >
+              <div className="flex justify-between items-start border-b border-slate-800 pb-3">
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-200">Export Source Code</h3>
+                  <p className="text-3xs text-slate-400">Download visual configurations as clean packages.</p>
+                </div>
+                <button
+                  onClick={() => setExportModalProject(null)}
+                  className="text-slate-500 hover:text-slate-350 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-3.5 p-4 bg-slate-950/60 border border-slate-850 rounded-2xl hover:border-slate-700 transition-colors">
+                  <div className="p-2 bg-blue-950 text-blue-400 rounded-xl">
+                    <FileCode className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-slate-200 block">Clean Project ZIP Bundle</span>
+                    <span className="text-3xs text-slate-500">Includes React 19 source, Vite setup config and static HTML assets folder.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2.5 pt-2">
+                <button
+                  onClick={() => setExportModalProject(null)}
+                  disabled={isExportingZip}
+                  className="flex-1 py-2 text-3xs uppercase tracking-wider border border-slate-800 hover:bg-slate-800 font-bold rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleZipDownload}
+                  disabled={isExportingZip}
+                  className="flex-1 py-2 text-3xs uppercase tracking-wider bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl flex items-center justify-center gap-1 shadow-lg cursor-pointer disabled:opacity-60"
+                >
+                  {isExportingZip ? (
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  ) : (
+                    <Download className="w-3.5 h-3.5 text-white" />
+                  )}
+                  {isExportingZip ? 'Exporting...' : 'Download ZIP'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
