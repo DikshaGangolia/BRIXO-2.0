@@ -2,7 +2,7 @@ import axios from 'axios';
 import { create } from 'zustand';
 import type { WebsiteProject, UserSession } from '../types/builder';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://brixo-2-0.onrender.com' : 'http://localhost:5000');
 
 interface AuthState {
   session: UserSession;
