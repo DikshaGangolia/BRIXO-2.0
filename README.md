@@ -2,7 +2,7 @@
 
 # 🚀 BRIXO 2.0
 
-### Build. Customize. Preview. Publish.
+### Build. Customize. Preview. Publish. Download.
 
 A full-stack visual website builder for creating, managing, previewing, and publishing websites, with backend-powered project storage and e-commerce workflows.
 
