@@ -4,81 +4,78 @@
 
 ### Build. Customize. Preview. Publish.
 
-**A full-stack visual web builder for creating and publishing modern websites through a simple, intuitive interface.**
+A full-stack visual website builder for creating, managing, previewing, and publishing websites, with backend-powered project storage and e-commerce workflows.
 
-⭐ If you find BRIXO useful, consider giving the repository a star!
-
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge)](https://brixo-2-0.vercel.app/)
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github)](https://github.com/DikshaGangolia/BRIXO-2.0)
+[![Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/DikshaGangolia/BRIXO-2.0)
+[![Live Frontend](https://img.shields.io/badge/Live%20Frontend-Visit-brightgreen?style=for-the-badge)](https://brixo-builder.vercel.app/)
+[![Backend](https://img.shields.io/badge/Backend-Render-6B46C1?style=for-the-badge)](https://brixo-2-0.onrender.com/)
 
 </div>
 
 ---
 
-## ✨ What is BRIXO 2.0?
+## Overview
 
-**BRIXO 2.0** is a full-stack visual web builder that helps users create, customize, preview, save, and publish websites from one platform.It combines visual website building with authentication, project management, publishing, and e-commerce functionality.
+BRIXO 2.0 brings website creation and publishing workflows together in one application. Users can work with website projects in a visual builder, preview their changes, publish sites, and configure commerce-related flows for published websites.
 
-## 🚀 Features
+The repository contains a React/Vite frontend and a Node.js/Express backend. The backend uses MongoDB through Mongoose and provides API routes for authentication, projects, payments, orders, verification, email, and developer tools.
 
-- 🧩 **Visual Website Builder** — Create and customize websites through an intuitive visual interface.
-- 🎨 **Customizable Components** — Build pages using flexible and reusable website components.
-- 👤 **Authentication & Dashboard** — Manage user accounts and projects securely.
-- 💾 **Project Management** — Save, organize, and continue working on website projects.
-- 👀 **Live Preview** — Preview changes before publishing.
-- 🌐 **Website Publishing** — Publish projects so they can be accessed as live websites.
-- 🛒 **E-Commerce Support** — Add products and cart functionality to published websites.
-- 💳 **Razorpay Integration** — Support online payment workflows.
-- 📱 **Responsive Design** — Create websites that work across different screen sizes.
+## Features
 
-## 🖼️ Project Screenshots
+- **Visual website builder** — create and customize website projects through the builder interface.
+- **Dashboard and project management** — create, save, update, duplicate, and delete projects.
+- **Preview and publishing** — preview project output and publish websites with public project access.
+- **Authentication** — registration and login backed by the API, with JWT-based request handling.
+- **Plans and payments** — subscription-related endpoints and Razorpay order/payment verification flows.
+- **Shopping cart and orders** — published-site cart checkout support, online payment and cash-on-delivery order flows, and order status management.
+- **Customer verification and notifications** — API routes for verification, email, and Twilio SMS integrations when configured.
+- **QR publishing support** — publishing workflows include QR-code generation.
+- **Project export** — frontend utilities generate downloadable website project archives.
+- **Owner developer tools** — developer endpoints are included for authorized project-related operations.
 
-BRIXO 2.0 includes a collection of **8 workflow screenshots** covering the main user journey:
+> Feature availability in a running deployment depends on the deployment configuration and valid service credentials. Third-party payment, email, and SMS actions require the corresponding provider setup.
 
-1. **Dashboard** — Browse starter templates and manage website projects.
-2. **Subscription Plans** — Compare BRIXO tiers and upgrade options.
-3. **Razorpay Payment Options** — Online payment interface.
-4. **Razorpay Exit Confirmation** — Payment exit handling.
-5. **Visual Website Builder** — Customize website content directly from the builder interface.
-6. **Live Website Preview** — Preview the generated website before publishing.
-7. **Shopping Cart** — Manage products and quantities on the published website.
-8. **Checkout & Payment** — Enter customer details and complete an order.
+## Tech Stack
 
-> The screenshot ZIP is included separately in the repository. The images will be displayed directly here once they are organized as individual repository files.
+| Area | Technologies |
+| --- | --- |
+| Frontend | React, TypeScript, Vite |
+| UI and state | Tailwind CSS, Framer Motion, Zustand, Lucide React |
+| HTTP and routing | Axios, React Router |
+| Backend | Node.js, Express |
+| Database | MongoDB, Mongoose |
+| Authentication | JWT, bcryptjs |
+| Payments | Razorpay |
+| Messaging and email | Twilio, Nodemailer, Resend |
+| Export | JSZip |
+| Deployment | Vercel (frontend), Render (backend) |
 
-## 🛠️ Tech Stack
-
-### Frontend
-
-- React
-- TypeScript
-- Vite
-- Zustand
-
-### Backend
-
-- Node.js
-- Express.js
-- MongoDB
-- JWT Authentication
-
-### Deployment
-
-- Vercel
-- Render
-
-## 📁 Project Structure
+## Repository Structure
 
 ```text
 BRIXO-2.0/
-├── BRIXO-2.0-main/   # Frontend application source
-├── backend/          # Node.js + Express backend
-├── PROJECT_REPORT.md
-├── README.md
-└── Screenshots.zip   # Project screenshot archive
+├── BRIXO-2.0-main/       # React + TypeScript + Vite frontend
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+├── backend/              # Express API and database models
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   └── server.js
+├── PROJECT_REPORT.md     # Development notes and feature report
+└── README.md
 ```
 
-## ⚙️ Getting Started
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm
+- A MongoDB connection for persistent database storage (recommended for deployments)
+- Provider credentials for any optional payment, SMS, or email features you want to use
 
 ### 1. Clone the repository
 
@@ -87,60 +84,94 @@ git clone https://github.com/DikshaGangolia/BRIXO-2.0.git
 cd BRIXO-2.0
 ```
 
-### 2. Install dependencies
-
-Install dependencies in the frontend and backend directories:
+### 2. Install frontend dependencies
 
 ```bash
 cd BRIXO-2.0-main
 npm install
+```
 
-cd ../backend
+### 3. Install backend dependencies
+
+Open a second terminal at the repository root, then run:
+
+```bash
+cd backend
 npm install
 ```
 
-### 3. Configure environment variables
+### 4. Configure environment variables
 
-Create the required `.env` files and configure application values such as:
+Create a local `.env` file in the `backend/` directory. Set the values appropriate for your environment. Common configuration keys used by the backend include:
 
-- MongoDB connection settings
-- JWT configuration
-- Razorpay credentials
-- API URLs
+| Variable | Purpose |
+| --- | --- |
+| `PORT` | Backend listening port; defaults to `5000` |
+| `MONGO_URI` | MongoDB connection URI |
+| `JWT_SECRET` | Secret used to sign and verify authentication tokens |
+| `RAZORPAY_KEY_ID` | Razorpay API key ID |
+| `RAZORPAY_KEY_SECRET` | Razorpay API secret |
+| `TWILIO_ACCOUNT_SID` | Twilio account identifier |
+| `TWILIO_AUTH_TOKEN` | Twilio authentication token |
+| `TWILIO_PHONE_NUMBER` | Twilio sender number for SMS |
 
-> ⚠️ Never commit secret keys or private credentials to GitHub.
+Email delivery and other integrations may require additional configuration in the relevant backend utilities. Use your provider's current dashboard to obtain credentials.
 
-### 4. Run the application
+For a separately hosted frontend, set the frontend build environment variable `VITE_API_URL` to the base URL of your backend API. In production, the frontend currently falls back to `https://brixo-2-0.onrender.com` if `VITE_API_URL` is not set.
 
-Start the backend and frontend development servers, then open the frontend in your browser.
+**Security:** Never commit real `.env` files, access tokens, API secrets, database credentials, or private keys to GitHub. Keep local configuration out of public archives and use your hosting provider's environment-variable settings for deployments.
 
-## 🎯 Why BRIXO?
+### 5. Start the application
 
-Building a website often requires handling multiple tools for UI development, authentication, project management, deployment, and e-commerce. **BRIXO 2.0 brings these core workflows together into a single visual platform**, making it easier to move from an idea to a working website.
+Run the backend in one terminal:
 
-## 🗺️ Project Roadmap
+```bash
+cd backend
+npm start
+```
 
-- [x] User authentication
-- [x] Project dashboard
-- [x] Visual website builder
-- [x] Project saving and management
-- [x] Live preview
-- [x] Website publishing
-- [x] Product and cart functionality
-- [x] Razorpay payment integration
-- [ ] Additional templates and reusable components
-- [ ] More advanced builder customization
+Run the frontend in another terminal:
 
-## 🤝 Contributions
+```bash
+cd BRIXO-2.0-main
+npm run dev
+```
 
-Contributions, suggestions, and feedback are welcome. If you find an issue or have an idea for improving BRIXO, feel free to open an issue or submit a pull request.
+Vite prints the local frontend URL in the terminal (the configured development port is `5173`). The backend defaults to port `5000`.
 
-## ⭐ Support the Project
+### 6. Create a production frontend build
 
-If you like BRIXO 2.0 or find the project useful, please consider **starring the repository**. Your support helps more developers discover the project and motivates further improvements!
+From `BRIXO-2.0-main/`:
 
-## 👩‍💻 Author
+```bash
+npm run build
+```
 
-**DikshaGangolia**
+Vite writes the production build to the frontend's `dist/` directory.
 
-🔗 [GitHub Profile](https://github.com/DikshaGangolia)
+## Deployment
+
+- **Frontend:** [brixo-builder.vercel.app](https://brixo-builder.vercel.app/)
+- **Backend health endpoint:** [brixo-2-0.onrender.com](https://brixo-2-0.onrender.com/)
+
+The backend needs its environment variables configured in the hosting dashboard. Ensure the frontend's `VITE_API_URL` points to the intended backend, and configure the backend's CORS allowlist for the frontend origin before deploying to a new domain.
+
+## Troubleshooting Notes
+
+- **Network or CORS errors:** verify the backend is running, `VITE_API_URL` is correct, and the frontend origin is allowed by backend CORS.
+- **Database errors:** verify `MONGO_URI` and the database provider's network access rules.
+- **Payment errors:** check that the Razorpay key ID and secret are valid and belong to the intended environment.
+- **SMS/email not delivered:** confirm the corresponding provider credentials, sender configuration, and account permissions.
+
+## Contributing
+
+Bug reports, suggestions, and pull requests are welcome. For focused changes, describe the issue and test the relevant frontend or backend workflow before submitting.
+
+## Author
+
+**DikshaGangolia**  
+[GitHub Profile](https://github.com/DikshaGangolia)
+
+---
+
+If you find BRIXO 2.0 useful, consider starring the repository.
