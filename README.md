@@ -4,8 +4,6 @@
 
 ### Build. Customize. Preview. Publish. Download.
 
-A full-stack visual website builder for creating, managing, previewing, and publishing websites, with backend-powered project storage and e-commerce workflows.
-
 [![Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/DikshaGangolia/BRIXO-2.0)
 [![Live Frontend](https://img.shields.io/badge/Live%20Frontend-Visit-brightgreen?style=for-the-badge)](https://brixo-builder.vercel.app/)
 [![Backend](https://img.shields.io/badge/Backend-Render-6B46C1?style=for-the-badge)](https://brixo-2-0.onrender.com/)
