@@ -165,6 +165,10 @@ The backend needs its environment variables configured in the hosting dashboard.
 
 Bug reports, suggestions, and pull requests are welcome. For focused changes, describe the issue and test the relevant frontend or backend workflow before submitting.
 
+## Contributors
+
+- **Diksha** — [@DikshaGangolia](https://github.com/DikshaGangolia)
+
 ## Author
 
 **DikshaGangolia**  
